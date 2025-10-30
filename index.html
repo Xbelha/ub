@@ -58,7 +58,6 @@
 
         <!-- Header and Date Navigation -->
         <header class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 border-b border-stone-200 pb-4">
-            <!-- NEU: w-full sm:w-auto mb-4 sm:mb-0 -->
             <div class="w-full sm:w-auto mb-4 sm:mb-0">
                 <!-- Logo: Versucht Online-Bild zu laden, mit Text-Fallback -->
                 <img src="https://macis-leipzig.de/wp-content/uploads/2019/03/Macis-Logo-Leipzig.png" 
@@ -103,10 +102,7 @@
                 <i class="ph ph-bank text-xl"></i>
                 <span>Abschrieb</span> 
             </button>
-            <button id="nav-btn-tgtg" onclick="showPage('page-tgtg', this)" class="nav-button text-sm md:text-lg font-semibold px-2 md:px-4 py-3 text-stone-600 hover:text-amber-700 w-full md:flex-1 flex items-center justify-center gap-2">
-                <i class="ph ph-package text-xl"></i>
-                <span>TGTG</span>
-            </button>
+            <!-- TGTG REITER ENTFERNT -->
         </nav>
 
         <!-- Main Content Grid -->
@@ -298,7 +294,7 @@
                                 Neuen Eintrag hinzufügen
                             </h2>
 
-                            <!-- Radio Buttons: Abschrieb / Retoure -->
+                            <!-- Radio Buttons: Abschrieb / Retoure / TGTG -->
                             <div class="flex items-center space-x-6 mb-4">
                                 <label class="flex items-center text-lg font-semibold">
                                     <input type="radio" name="eintrag-typ" value="abschrieb" checked class="h-5 w-5 text-amber-700 focus:ring-amber-500">
@@ -307,6 +303,10 @@
                                 <label class="flex items-center text-lg font-semibold">
                                     <input type="radio" name="eintrag-typ" value="retoure" class="h-5 w-5 text-amber-700 focus:ring-amber-500">
                                     <span class="ml-2">Retoure</span>
+                                </label>
+                                <label class="flex items-center text-lg font-semibold">
+                                    <input type="radio" name="eintrag-typ" value="tgtg" class="h-5 w-5 text-amber-700 focus:ring-amber-500">
+                                    <span class="ml-2">TGTG</span>
                                 </label>
                             </div>
                             
@@ -337,8 +337,8 @@
                             </div>
                         </div>
 
-                        <!-- LISTEN (Abschrieb & Retoure) -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- LISTEN (Abschrieb, Retoure, TGTG) -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <!-- 1. Abschrieb -->
                             <div class="mb-4">
                                 <h3 class="text-lg font-semibold text-stone-700 mb-2">Abschrieb</h3>
@@ -350,83 +350,33 @@
                                 <h3 class="text-lg font-semibold text-stone-700 mb-2">Retoure</h3>
                                 <ul id="retoure-list-neu" class="space-y-2 task-list overflow-y-auto flex-grow min-h-20 max-h-96 pr-2 bg-stone-50 p-2 rounded-lg border border-stone-200"></ul>
                             </div>
+                            
+                            <!-- 3. TGTG -->
+                            <div class="mb-4">
+                                <h3 class="text-lg font-semibold text-stone-700 mb-2">TGTG</h3>
+                                <ul id="tgtg-list-neu" class="space-y-2 task-list overflow-y-auto flex-grow min-h-20 max-h-96 pr-2 bg-stone-50 p-2 rounded-lg border border-stone-200"></ul>
+                            </div>
                         </div>
                         
-                        <!-- Druck-Button -->
-                        <div class="mt-auto pt-4 border-t border-stone-200">
+                        <!-- Buttons (Druck & TGTG-Link) -->
+                        <div class="mt-auto pt-4 border-t border-stone-200 grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <button onclick="printTagesabschluss()" class="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition shadow-md text-lg font-semibold flex items-center justify-center gap-2">
                                 <i class="ph ph-printer text-xl"></i>
                                 Abschrieb drucken
                             </button>
+                            <a href="https://app.toogoodtogo.com/login" 
+                               target="_blank" 
+                               rel="noopener noreferrer"
+                               class="inline-block w-full text-center bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition shadow-md text-lg font-semibold flex items-center justify-center gap-2">
+                                <i class="ph ph-arrow-square-out mr-1 inline-block"></i>
+                                TGTG-Website
+                            </a>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- === NEUE SEITE 5: TGTG === -->
-            <div id="page-tgtg" class="page-content hidden">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    
-                    <!-- Card: TGTG Eintragen -->
-                    <div class="bg-white p-6 rounded-2xl shadow-lg flex flex-col border border-stone-200">
-                        <h2 class="text-2xl font-semibold text-amber-800 mb-4 border-b border-amber-200 pb-2">
-                            <i class="ph ph-package inline-block mr-2 text-amber-600 align-middle"></i>
-                            TGTG eintragen
-                        </h2>
-                        
-                        <!-- NEUES TGTG EINGABEFORMULAR -->
-                        <div class="space-y-4">
-                            <!-- Produktauswahl -->
-                            <h4 class="text-md font-semibold text-stone-600 mb-2">Produktauswahl</h4>
-                            <div class="flex space-x-2 mb-2">
-                                <select id="select-tgtg-kategorie" onchange="updateTgtgProduktDropdown()" class="flex-grow border border-stone-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-amber-500">
-                                    <option value="">-- Kategorie --</option>
-                                </select>
-                                <select id="select-tgtg-produkt" class="flex-grow border border-stone-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-amber-500">
-                                    <option value="">-- Produkt --</option>
-                                </select>
-                            </div>
-                            <div class="flex space-x-2 mb-2">
-                                <input type="number" id="input-tgtg-menge" placeholder="Menge" class="w-20 border border-stone-300 rounded-lg p-2 text-center focus:outline-none focus:ring-2 focus:ring-amber-500">
-                                <button onclick="addTgtgProduktItem()" title="Produkt hinzufügen" class="flex-grow bg-amber-700 text-white px-4 py-2 rounded-lg hover:bg-amber-800 transition shadow">
-                                    <i class="ph ph-plus text-lg"></i> Hinzufügen
-                                </button>
-                            </div>
-
-                            <!-- Manuelle Eingabe -->
-                            <h4 class="text-md font-semibold text-stone-600 mb-2 mt-4">Manuelle Eingabe</h4>
-                            <div class="flex space-x-2 mb-2">
-                                <input type="text" id="new-tgtg-input" placeholder="Andere Eingabe (z.B. Tüte 1)" class="flex-grow border border-stone-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500">
-                                <button onclick="addTgtgManualItem()" title="Einfach hinzufügen" class="bg-amber-700 text-white px-4 py-2 rounded-lg hover:bg-amber-800 transition shadow">
-                                    <i class="ph ph-plus text-lg"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <ul id="tgtg-list-neu" class="space-y-2 task-list overflow-y-auto flex-grow min-h-20 max-h-96 pr-2 bg-stone-50 p-2 rounded-lg border border-stone-200 mt-4"></ul>
-                    </div>
-
-
-                    <!-- Card: TGTG Website -->
-                    <div class="bg-white p-6 rounded-2xl shadow-lg flex flex-col border border-stone-200 justify-between">
-                        <div>
-                            <h2 class="text-2xl font-semibold text-amber-800 mb-4 border-b border-amber-200 pb-2">
-                                <i class="ph ph-arrow-square-out inline-block mr-2 text-amber-600 align-middle"></i>
-                                TGTG Verwalten
-                            </h2>
-                            <p class="text-stone-600 mb-4">
-                                Öffnet die TGTG-Website in einem neuen Tab, um die Anzahl der verfügbaren Tüten zu ändern.
-                            </p>
-                        </div>
-                        <a href="https://app.toogoodtogo.com/login" 
-                           target="_blank" 
-                           rel="noopener noreferrer"
-                           class="inline-block w-full text-center bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition shadow-md font-semibold mt-auto">
-                            <i class="ph ph-arrow-square-out mr-1 inline-block"></i>
-                            TGTG-Website öffnen
-                        </a>
-                    </div>
-                </div>
-            </div>
+            <!-- TGTG SEITE (ENTFERNT) -->
 
         </main>
     </div>
@@ -800,9 +750,9 @@
             }
         }
 
-        // --- FUNKTION für Produktauswahl (Abschrieb/Retoure) ---
+        // --- FUNKTION für Produktauswahl (Abschrieb/Retoure/TGTG) ---
         window.addProduktItem = function() {
-            const typ = document.querySelector('input[name="eintrag-typ"]:checked').value; // 'abschrieb' oder 'retoure'
+            const typ = document.querySelector('input[name="eintrag-typ"]:checked').value; // 'abschrieb', 'retoure' oder 'tgtg'
             const produktSelectEl = document.getElementById('select-eintrag-produkt');
             const mengeInputEl = document.getElementById('input-eintrag-menge');
             
@@ -824,9 +774,9 @@
             mengeInputEl.value = ""; // Nur Menge zurücksetzen
         }
 
-        // --- FUNKTION für manuelle Eingabe (Abschrieb/Retoure) ---
+        // --- FUNKTION für manuelle Eingabe (Abschrieb/Retoure/TGTG) ---
         window.addManualItem = function() {
-            const typ = document.querySelector('input[name="eintrag-typ"]:checked').value; // 'abschrieb' oder 'retoure'
+            const typ = document.querySelector('input[name="eintrag-typ"]:checked').value; // 'abschrieb', 'retoure' oder 'tgtg'
             const inputEl = document.getElementById('new-eintrag-input');
             const newText = inputEl.value.trim();
             if (!newText) return;
@@ -834,47 +784,9 @@
             saveAndRenderItem(typ, newText);
             inputEl.value = '';
         }
-
-        // --- TGTG FUNKTIONEN ---
-        window.addTgtgProduktItem = function() {
-            const produktSelectEl = document.getElementById('select-tgtg-produkt');
-            const mengeInputEl = document.getElementById('input-tgtg-menge');
-            
-            const product = produktSelectEl.value;
-            const menge = mengeInputEl.value.trim();
-
-            if (!product) {
-                alert("Bitte ein Produkt auswählen.");
-                return;
-            }
-            if (!menge || parseInt(menge) <= 0) {
-                alert("Bitte eine gültige Menge eingeben.");
-                return;
-            }
-
-            const newText = `${menge}x ${product}`; // Format: "5x Dinkelbrot"
-            saveAndRenderItem('tgtg', newText);
-            mengeInputEl.value = ""; 
-        }
-
-        window.addTgtgManualItem = function() {
-            const inputEl = document.getElementById('new-tgtg-input');
-            const newText = inputEl.value.trim();
-            if (!newText) return;
-
-            saveAndRenderItem('tgtg', newText);
-            inputEl.value = '';
-        }
-
-        // Fallback für TGTG (alte Funktion)
-        window.addDynamicItem = function(fieldName, inputId) {
-             const inputEl = document.getElementById(inputId);
-             const newText = inputEl.value.trim();
-             if (!newText) return;
-             if (fieldName !== 'tgtg') return; 
-             saveAndRenderItem(fieldName, newText);
-             inputEl.value = '';
-        }
+        
+        // --- addDynamicItem & TGTG-Funktionen ENTFERNT, da sie durch
+        // addProduktItem und addManualItem ersetzt wurden ---
 
 
         window.deleteDynamicItem = function(fieldName, index) {
@@ -1083,7 +995,7 @@
             }
         }
         
-        // NEU: Eigene Update-Funktion für TGTG-Dropdown
+        // Eigene Update-Funktion für TGTG-Dropdown
         window.updateTgtgProduktDropdown = function() {
             const kategorieSelect = document.getElementById(`select-tgtg-kategorie`);
             const produktSelect = document.getElementById(`select-tgtg-produkt`);
@@ -1106,10 +1018,10 @@
         function populateKategorieDropdowns() {
             const kategorien = Object.keys(PRODUKT_KATEGORIEN);
             const kategorieSelect = document.getElementById('select-eintrag-kategorie');
-            const tgtgKategorieSelect = document.getElementById('select-tgtg-kategorie'); // NEU
+            const tgtgKategorieSelect = document.getElementById('select-tgtg-kategorie'); 
             
             kategorieSelect.innerHTML = '<option value="">-- Kategorie --</option>';
-            tgtgKategorieSelect.innerHTML = '<option value="">-- Kategorie --</option>'; // NEU
+            tgtgKategorieSelect.innerHTML = '<option value="">-- Kategorie --</option>'; 
             
             kategorien.forEach(kategorie => {
                 const option1 = document.createElement('option');
@@ -1117,7 +1029,6 @@
                 option1.textContent = kategorie;
                 kategorieSelect.appendChild(option1);
 
-                // NEU: Auch TGTG-Dropdown füllen
                 const option2 = document.createElement('option');
                 option2.value = kategorie;
                 option2.textContent = kategorie;
