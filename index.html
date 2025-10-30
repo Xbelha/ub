@@ -295,16 +295,16 @@
                             </h2>
 
                             <!-- Radio Buttons: Abschrieb / Retoure / TGTG -->
-                            <div class="flex items-center space-x-6 mb-4">
-                                <label class="flex items-center text-lg font-semibold">
+                            <div class="flex flex-col sm:flex-row items-start sm:items-center sm:space-x-6 mb-4">
+                                <label class="flex items-center text-lg font-semibold mb-2 sm:mb-0">
                                     <input type="radio" name="eintrag-typ" value="abschrieb" checked class="h-5 w-5 text-amber-700 focus:ring-amber-500">
                                     <span class="ml-2">Abschrieb</span>
                                 </label>
-                                <label class="flex items-center text-lg font-semibold">
+                                <label class="flex items-center text-lg font-semibold mb-2 sm:mb-0">
                                     <input type="radio" name="eintrag-typ" value="retoure" class="h-5 w-5 text-amber-700 focus:ring-amber-500">
                                     <span class="ml-2">Retoure</span>
                                 </label>
-                                <label class="flex items-center text-lg font-semibold">
+                                <label class="flex items-center text-lg font-semibold mb-2 sm:mb-0">
                                     <input type="radio" name="eintrag-typ" value="tgtg" class="h-5 w-5 text-amber-700 focus:ring-amber-500">
                                     <span class="ml-2">TGTG</span>
                                 </label>
@@ -312,7 +312,7 @@
                             
                             <!-- Produktauswahl -->
                             <h4 class="text-md font-semibold text-stone-600 mb-2">Produktauswahl</h4>
-                            <div class="flex space-x-2 mb-2">
+                            <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 mb-2">
                                 <select id="select-eintrag-kategorie" onchange="updateProduktDropdown()" class="flex-grow border border-stone-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-amber-500">
                                     <option value="">-- Kategorie --</option>
                                 </select>
@@ -995,33 +995,22 @@
             }
         }
         
-        // Eigene Update-Funktion für TGTG-Dropdown
+        // Eigene Update-Funktion für TGTG-Dropdown (ENTFERNT, da nicht mehr benötigt)
+        /*
         window.updateTgtgProduktDropdown = function() {
-            const kategorieSelect = document.getElementById(`select-tgtg-kategorie`);
-            const produktSelect = document.getElementById(`select-tgtg-produkt`);
-            const selectedKategorie = kategorieSelect.value;
-            
-            produktSelect.innerHTML = '<option value="">-- Produkt --</option>'; // Reset
-            
-            if (selectedKategorie && PRODUKT_KATEGORIEN[selectedKategorie]) {
-                PRODUKT_KATEGORIEN[selectedKategorie].forEach(produkt => {
-                    const option = document.createElement('option');
-                    option.value = produkt;
-                    option.textContent = produkt;
-                    produktSelect.appendChild(option);
-                });
-            }
+            // ... code entfernt ...
         }
+        */
 
 
         // Füllt die Kategorie-Dropdowns beim Start
         function populateKategorieDropdowns() {
             const kategorien = Object.keys(PRODUKT_KATEGORIEN);
             const kategorieSelect = document.getElementById('select-eintrag-kategorie');
-            const tgtgKategorieSelect = document.getElementById('select-tgtg-kategorie'); 
+            // const tgtgKategorieSelect = document.getElementById('select-tgtg-kategorie'); // ENTFERNT
             
             kategorieSelect.innerHTML = '<option value="">-- Kategorie --</option>';
-            tgtgKategorieSelect.innerHTML = '<option value="">-- Kategorie --</option>'; 
+            // tgtgKategorieSelect.innerHTML = '<option value="">-- Kategorie --</option>'; // ENTFERNT
             
             kategorien.forEach(kategorie => {
                 const option1 = document.createElement('option');
@@ -1029,10 +1018,13 @@
                 option1.textContent = kategorie;
                 kategorieSelect.appendChild(option1);
 
+                // TGTG-Dropdown füllen ENTFERNT
+                /*
                 const option2 = document.createElement('option');
                 option2.value = kategorie;
                 option2.textContent = kategorie;
                 tgtgKategorieSelect.appendChild(option2);
+                */
             });
         }
 
