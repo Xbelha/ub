@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bäckerei Übergabe (Lokal)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:wght@700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web@2.0.3/src/index.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fffbeb; /* amber-50 */
+        }
+        input[type="checkbox"]:checked + label {
+            text-decoration: line-through;
+            color: #78716c; /* stone-500 */
+        }
+        .task-list::-webkit-scrollbar { width: 6px; }
+        .task-list::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
+        .task-list::-webkit-scrollbar-thumb { background: #d4a75c; border-radius: 10px; }
+        
+        /* Stile für die Nav-Buttons */
+        .nav-button {
+            transition: all 0.2s ease-in-out;
+            border-bottom: 3px solid transparent;
+        }
+        .nav-button.active {
+            color: #b45309; /* amber-700 */
+            border-bottom-color: #b45309; /* amber-700 */
+        }
+        .font-logo {
+            font-family: 'Lora', serif;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        /* Stile für das Bestätigungs-Modal */
+        #confirm-modal-backdrop {
+            transition: opacity 0.2s ease-in-out;
+        }
+        #confirm-modal-content {
+            transition: all 0.2s ease-in-out;
+            transform: scale(0.95);
+        }
+        #confirm-modal.show #confirm-modal-backdrop {
+            opacity: 1;
+        }
+        #confirm-modal.show #confirm-modal-content {
+            opacity: 1;
+            transform: scale(1);
+        }
+    </style>
+</head>
+<body class="antialiased text-stone-800">
+
+    <div class="container mx-auto max-w-5xl p-4 md:p-8">
+
+        <!-- Header and Date Navigation -->
+        <header class="flex justify-between items-center mb-4 border-b border-stone-200 pb-4">
+            <div>
+                <!-- Logo: Versucht Online-Bild zu laden, mit Text-Fallback -->
+                <img src="https://macis-leipzig.de/wp-content/uploads/2019/03/Macis-Logo-Leipzig.png" 
+                     alt="Macis Logo" 
+                     class="h-12"
+                     onerror="this.style.display='none'; document.getElementById('logo-fallback').style.display='block'">
+                <!-- Fallback-Logo (Text), falls Bild nicht lädt (z.B. offline) -->
+                <div id="logo-fallback" style="display:none;">
+                    <h1 class="text-3xl text-amber-900">
+                        <span class="font-logo">macis</span>
+                        <span class="font-semibold text-2xl tracking-wider">LEIPZIG</span>
+                    </h1>
+                </div>
+                <h2 class="text-2xl font-semibold text-stone-700 mt-2">Bäckerei Übergabe</h2>
+            </div>
+            <div class="flex items-center space-x-2">
+                <button onclick="changeDay(-1)" class="p-2 rounded-lg bg-white shadow-sm hover:bg-stone-100 transition border border-stone-200">
+                    <i class="ph ph-caret-left text-xl text-amber-800"></i>
+                </button>
+                <span id="current-date" class="text-xl font-semibold text-amber-800 w-32 text-center"></span>
+                <button onclick="changeDay(1)" class="p-2 rounded-lg bg-white shadow-sm hover:bg-stone-100 transition border border-stone-200">
+                    <i class="ph ph-caret-right text-xl text-amber-800"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Reiter-Navigation -->
+        <nav class="flex items-center space-x-2 md:space-x-4 mb-8 bg-white p-2 rounded-lg shadow-sm border border-stone-200">
+            <button id="nav-btn-uebergabe" onclick="showPage('page-uebergabe', this)" class="nav-button active text-sm md:text-lg font-semibold px-2 md:px-4 py-3 text-stone-600 hover:text-amber-700 flex-1 flex items-center justify-center gap-2">
+                <i class="ph ph-notebook text-xl"></i>
+                <span>Übergabe</span>
+            </button>
+            <button id="nav-btn-schichten" onclick="showPage('page-schichten', this)" class="nav-button text-sm md:text-lg font-semibold px-2 md:px-4 py-3 text-stone-600 hover:text-amber-700 flex-1 flex items-center justify-center gap-2">
+                <i class="ph ph-sun-horizon text-xl"></i>
+                <span>Schichten</span>
+            </button>
+            <!-- Reiter "Bestellungen" (Outlook-Helfer) -->
+            <button id="nav-btn-bestellungen" onclick="showPage('page-bestellungen', this)" class="nav-button text-sm md:text-lg font-semibold px-2 md:px-4 py-3 text-stone-600 hover:text-amber-700 flex-1 flex items-center justify-center gap-2">
+                <i class="ph ph-calendar-plus text-xl"></i>
+                <span>Bestellungen</span>
+            </button>
+            <button id="nav-btn-abschluss" onclick="showPage('page-abschluss', this)" class="nav-button text-sm md:text-lg font-semibold px-2 md:px-4 py-3 text-stone-600 hover:text-amber-700 flex-1 flex items-center justify-center gap-2">
+                <i class="ph ph-bank text-xl"></i>
+                <span>Abschrieb</span> 
+            </button>
+            <!-- NEUER TGTG REITER -->
+            <button id="nav-btn-tgtg" onclick="showPage('page-tgtg', this)" class="nav-button text-sm md:text-lg font-semibold px-2 md:px-4 py-3 text-stone-600 hover:text-amber-700 flex-1 flex items-center justify-center gap-2">
+                <i class="ph ph-package text-xl"></i>
+                <span>TGTG</span>
+            </button>
+        </nav>
+
+        <!-- Main Content Grid -->
+        <main id="app-content">
+
+            <!-- === SEITE 1: Kommunikation === -->
+            <div id="page-uebergabe" class="page-content flex flex-col gap-6">
+                <!-- Card: Wichtige Infos (Persistent) -->
+                <div class="bg-white p-6 rounded-2xl shadow-lg flex flex-col border border-stone-200">
+                    <div class="flex justify-between items-center mb-4 border-b border-amber-200 pb-2">
+                        <h2 class="text-2xl font-semibold text-amber-800">
+                            <i class="ph ph-warning-circle inline-block mr-2 text-red-600 align-middle"></i>
+                            Wichtige Infos (Bleibt gespeichert)
+                        </h2>
+                        <span id="static-save-status" class="text-sm text-stone-500 transition-opacity opacity-0">Gespeichert!</span>
+                    </div>
+                    <textarea id="static-info-text" 
+                        oninput="debouncedUpdateStaticInfo()" 
+                        placeholder="Wichtige Infos für alle Schichten (Allergene, Preise, kaputte Geräte)..." 
+                        class="flex-grow w-full border border-stone-300 rounded-lg p-3 min-h-32 focus:outline-none focus:ring-2 focus:ring-amber-500"></textarea>
+                </div>
+
+                <!-- Card: Übergabe Notizen -->
+                <div class="bg-white p-6 rounded-2xl shadow-lg flex flex-col border border-stone-200">
+                    <div class="flex justify-between items-center mb-4 border-b border-amber-200 pb-2 gap-4">
+                        <h2 class="text-2xl font-semibold text-amber-800">
+                            <i class="ph ph-note-pencil inline-block mr-2 text-amber-600 align-middle"></i>
+                            Tägliche Übergabe Notizen
+                        </h2>
+                        <span id="save-status" class="text-sm text-stone-500 transition-opacity opacity-0">Gespeichert!</span>
+                    </div>
+                    <textarea id="uebergabe-notiz" 
+                        oninput="debouncedUpdateNotes()" 
+                        placeholder="Wichtige Infos für die nächste Schicht (Früh an Spät / Spät an Früh)..." 
+                        class="flex-grow w-full border border-stone-300 rounded-lg p-3 min-h-48 focus:outline-none focus:ring-2 focus:ring-amber-500"></textarea>
+                </div>
+            </div>
+            
+            <!-- === SEITE 2: Tägliche Aufgaben === -->
+            <div id="page-schichten" class="page-content hidden">
+                
+                <!-- Reset-Button -->
+                <div class="mb-4 flex justify-end">
+                    <button onclick="resetTasksForToday()" class="flex items-center gap-2 px-4 py-2 bg-white border border-red-300 text-red-600 rounded-lg shadow-sm hover:bg-red-50 transition">
+                        <i class="ph ph-arrow-clockwise text-lg"></i>
+                        Alle Aufgaben zurücksetzen
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Card: Frühschicht -->
+                    <div class="bg-white p-6 rounded-2xl shadow-lg flex flex-col border border-stone-200">
+                        <h2 class="text-2xl font-semibold text-amber-800 mb-4 border-b border-amber-200 pb-2">
+                            <i class="ph ph-sun inline-block mr-2 text-amber-600 align-middle"></i>
+                            Frühschicht Aufgaben
+                        </h2>
+                        <ul id="frueh-aufgaben-list" class="space-y-3 task-list overflow-y-auto max-h-96 pr-2">
+                            <!-- Static checklist items will be rendered here -->
+                        </ul>
+                    </div>
+
+                    <!-- Card: Spätschicht -->
+                    <div class="bg-white p-6 rounded-2xl shadow-lg flex flex-col border border-stone-200">
+                        <h2 class="text-2xl font-semibold text-amber-800 mb-4 border-b border-amber-200 pb-2">
+                            <i class="ph ph-moon inline-block mr-2 text-amber-600 align-middle"></i>
+                            Spätschicht Aufgaben
+                        </h2>
+                        <ul id="spaet-aufgaben-list" class="space-y-3 task-list overflow-y-auto max-h-96 pr-2">
+                            <!-- Static checklist items will be rendered here -->
+                        </ul>
+                    </div>
+
+                    <!-- Card: Sonntagsschicht (wird per JS ein-/ausgeblendet) -->
+                    <div id="sonntag-card" class="bg-white p-6 rounded-2xl shadow-lg flex flex-col hidden border border-stone-200">
+                        <h2 class="text-2xl font-semibold text-amber-800 mb-4 border-b border-amber-200 pb-2">
+                            <i class="ph ph-calendar-check inline-block mr-2 text-amber-600 align-middle"></i>
+                            Sonntagsschicht
+                        </h2>
+                        <ul id="sonntag-aufgaben-list" class="space-y-3 task-list overflow-y-auto max-h-96 pr-2">
+                            <!-- Static checklist items will be rendered here -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- === SEITE 3: Outlook-Helfer === -->
+            <div id="page-bestellungen" class="page-content hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    
+                    <!-- Card: Neue Bestellung in Outlook eintragen -->
+                    <div class="bg-white p-6 rounded-2xl shadow-lg flex flex-col border border-stone-200">
+                        <h2 class="text-2xl font-semibold text-amber-800 mb-4 border-b border-amber-200 pb-2">
+                            <i class="ph ph-plus-circle inline-block mr-2 text-amber-600 align-middle"></i>
+                            Neue Bestellung in Outlook eintragen
+                        </h2>
+                        <!-- FORMULAR -->
+                        <form id="outlook-form" class="space-y-4">
+                            <!-- Abholen (Datum & Zeit) -->
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label for="order-date" class="block text-sm font-medium text-stone-700 mb-1">Abhol-Datum</label>
+                                    <input type="date" id="order-date" required class="w-full border border-stone-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                                </div>
+                                <div>
+                                    <label for="order-time" class="block text-sm font-medium text-stone-700 mb-1">Abhol-Zeit</label>
+                                    <input type="time" id="order-time" required class="w-full border border-stone-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                                </div>
+                            </div>
+                            
+                            <!-- Name (Betreff) -->
+                            <div>
+                                <label for="order-customer" class="block text-sm font-medium text-stone-700 mb-1">Name (Betreff)</label>
+                                <input type="text" id="order-customer" placeholder="z.B. Herr Müller" required class="w-full border border-stone-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                            </div>
+
+                            <!-- Mitarbeiter & Telefon -->
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label for="order-mitarbeiter" class="block text-sm font-medium text-stone-700 mb-1">Mitarbeiter</label>
+                                    <input type="text" id="order-mitarbeiter" placeholder="Dein Name" required class="w-full border border-stone-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                                </div>
+                                <div>
+                                    <label for="order-telefon" class="block text-sm font-medium text-stone-700 mb-1">Telefonnummer</label>
+                                    <input type="tel" id="order-telefon" placeholder="Telefon des Kunden" class="w-full border border-stone-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                                </div>
+                            </div>
+
+                            <!-- Produkte (Details) -->
+                            <div>
+                                <label for="order-details" class="block text-sm font-medium text-stone-700 mb-1">Produkte</label>
+                                <textarea id="order-details" rows="4" placeholder="z.B. 2x Dinkelbrot, 1x Apfeltasche, 3x Croissants" required class="w-full border border-stone-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-amber-500"></textarea>
+                            </div>
+
+                            <!-- Checkboxen -->
+                            <div class="space-y-2">
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="order-bezahlt" class="h-5 w-5 rounded border-stone-300 text-amber-700 focus:ring-amber-500">
+                                    <label for="order-bezahlt" class="ml-3 block text-md text-stone-700">Bereits bezahlt?</label>
+                                </div>
+                                <!-- Pâtisserie Checkbox -->
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="order-patisserie" class="h-5 w-5 rounded border-stone-300 text-amber-700 focus:ring-amber-500">
+                                    <label for="order-patisserie" class="ml-3 block text-md text-stone-700">Auch an Pâtisserie senden?</label>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="w-full bg-amber-700 text-white px-6 py-3 rounded-lg hover:bg-amber-800 transition shadow-md text-lg font-semibold flex items-center justify-center gap-2">
+                                <i class="ph ph-calendar-plus text-xl"></i>
+                                In Outlook eintragen
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Card: Outlook Kalender öffnen -->
+                    <div class="bg-white p-6 rounded-2xl shadow-lg flex flex-col border border-stone-200">
+                        <h2 class="text-2xl font-semibold text-amber-800 mb-4 border-b border-amber-200 pb-2">
+                            <i class="ph ph-calendar inline-block mr-2 text-amber-600 align-middle"></i>
+                            Kalender ansehen
+                        </h2>
+                        <p class="text-stone-600 mb-4">
+                            Öffnet den Outlook-Kalender für den oben in der App **ausgewählten Tag**.
+                        </p>
+                        <!-- Dieser Link wird jetzt dynamisch per JS aktualisiert -->
+                        <a id="dynamic-outlook-link" 
+                           href="https://outlook.live.com/calendar/view/day" 
+                           target="_blank" 
+                           rel="noopener noreferrer"
+                           class="inline-block w-full text-center bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition shadow-md font-semibold">
+                            <i class="ph ph-calendar-blank mr-1 inline-block"></i>
+                            Kalender für gewählten Tag öffnen
+                        </a>
+                        <p class="text-xs text-stone-500 mt-4">
+                            (Stellen Sie sicher, dass Sie im Browser mit dem richtigen Macis-Konto bei Outlook angemeldet sind.)
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- === SEITE 4: Abschrieb === -->
+            <div id="page-abschluss" class="page-content hidden">
+                <div class="grid grid-cols-1 gap-6">
+                    <!-- Card: Tagesabschluss -->
+                    <div class="bg-white p-6 rounded-2xl shadow-lg flex flex-col border border-stone-200">
+                        
+                        <!-- EINHEITLICHES FORMULAR -->
+                        <div class="mb-6 border-b border-stone-200 pb-6">
+                            <h2 class="text-2xl font-semibold text-amber-800 mb-4">
+                                <i class="ph ph-plus-circle inline-block mr-2 text-amber-600 align-middle"></i>
+                                Neuen Eintrag hinzufügen
+                            </h2>
+
+                            <!-- Radio Buttons: Abschrieb / Retoure -->
+                            <div class="flex items-center space-x-6 mb-4">
+                                <label class="flex items-center text-lg font-semibold">
+                                    <input type="radio" name="eintrag-typ" value="abschrieb" checked class="h-5 w-5 text-amber-700 focus:ring-amber-500">
+                                    <span class="ml-2">Abschrieb</span>
+                                </label>
+                                <label class="flex items-center text-lg font-semibold">
+                                    <input type="radio" name="eintrag-typ" value="retoure" class="h-5 w-5 text-amber-700 focus:ring-amber-500">
+                                    <span class="ml-2">Retoure</span>
+                                </label>
+                            </div>
+                            
+                            <!-- Produktauswahl -->
+                            <h4 class="text-md font-semibold text-stone-600 mb-2">Produktauswahl</h4>
+                            <div class="flex space-x-2 mb-2">
+                                <select id="select-eintrag-kategorie" onchange="updateProduktDropdown()" class="flex-grow border border-stone-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                                    <option value="">-- Kategorie --</option>
+                                </select>
+                                <select id="select-eintrag-produkt" class="flex-grow border border-stone-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                                    <option value="">-- Produkt --</option>
+                                </select>
+                            </div>
+                            <div class="flex space-x-2 mb-2">
+                                <input type="number" id="input-eintrag-menge" placeholder="Menge" class="w-20 border border-stone-300 rounded-lg p-2 text-center focus:outline-none focus:ring-2 focus:ring-amber-500">
+                                <button onclick="addProduktItem()" title="Produkt hinzufügen" class="flex-grow bg-amber-700 text-white px-4 py-2 rounded-lg hover:bg-amber-800 transition shadow">
+                                    <i class="ph ph-plus text-lg"></i> Hinzufügen
+                                </button>
+                            </div>
+
+                            <!-- Manuelle Eingabe -->
+                            <h4 class="text-md font-semibold text-stone-600 mb-2 mt-4">Manuelle Eingabe</h4>
+                            <div class="flex space-x-2 mb-2">
+                                <input type="text" id="new-eintrag-input" placeholder="Andere Eingabe (z.B. 1L Milch)" class="flex-grow border border-stone-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                                <button onclick="addManualItem()" title="Einfach hinzufügen" class="bg-amber-700 text-white px-4 py-2 rounded-lg hover:bg-amber-800 transition shadow">
+                                    <i class="ph ph-plus text-lg"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- LISTEN (Abschrieb & Retoure) -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- 1. Abschrieb -->
+                            <div class="mb-4">
+                                <h3 class="text-lg font-semibold text-stone-700 mb-2">Abschrieb</h3>
+                                <ul id="abschrieb-list-neu" class="space-y-2 task-list overflow-y-auto flex-grow min-h-20 max-h-96 pr-2 bg-stone-50 p-2 rounded-lg border border-stone-200"></ul>
+                            </div>
+
+                            <!-- 2. Retoure -->
+                            <div class="mb-4">
+                                <h3 class="text-lg font-semibold text-stone-700 mb-2">Retoure</h3>
+                                <ul id="retoure-list-neu" class="space-y-2 task-list overflow-y-auto flex-grow min-h-20 max-h-96 pr-2 bg-stone-50 p-2 rounded-lg border border-stone-200"></ul>
+                            </div>
+                        </div>
+                        
+                        <!-- Druck-Button -->
+                        <div class="mt-auto pt-4 border-t border-stone-200">
+                            <button onclick="printTagesabschluss()" class="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition shadow-md text-lg font-semibold flex items-center justify-center gap-2">
+                                <i class="ph ph-printer text-xl"></i>
+                                Abschrieb drucken
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- === NEUE SEITE 5: TGTG === -->
+            <div id="page-tgtg" class="page-content hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    
+                    <!-- Card: TGTG Eintragen -->
+                    <div class="bg-white p-6 rounded-2xl shadow-lg flex flex-col border border-stone-200">
+                        <h2 class="text-2xl font-semibold text-amber-800 mb-4 border-b border-amber-200 pb-2">
+                            <i class="ph ph-package inline-block mr-2 text-amber-600 align-middle"></i>
+                            TGTG eintragen
+                        </h2>
+                        
+                        <!-- NEUES TGTG EINGABEFORMULAR -->
+                        <div class="space-y-4">
+                            <!-- Produktauswahl -->
+                            <h4 class="text-md font-semibold text-stone-600 mb-2">Produktauswahl</h4>
+                            <div class="flex space-x-2 mb-2">
+                                <select id="select-tgtg-kategorie" onchange="updateTgtgProduktDropdown()" class="flex-grow border border-stone-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                                    <option value="">-- Kategorie --</option>
+                                </select>
+                                <select id="select-tgtg-produkt" class="flex-grow border border-stone-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                                    <option value="">-- Produkt --</option>
+                                </select>
+                            </div>
+                            <div class="flex space-x-2 mb-2">
+                                <input type="number" id="input-tgtg-menge" placeholder="Menge" class="w-20 border border-stone-300 rounded-lg p-2 text-center focus:outline-none focus:ring-2 focus:ring-amber-500">
+                                <button onclick="addTgtgProduktItem()" title="Produkt hinzufügen" class="flex-grow bg-amber-700 text-white px-4 py-2 rounded-lg hover:bg-amber-800 transition shadow">
+                                    <i class="ph ph-plus text-lg"></i> Hinzufügen
+                                </button>
+                            </div>
+
+                            <!-- Manuelle Eingabe -->
+                            <h4 class="text-md font-semibold text-stone-600 mb-2 mt-4">Manuelle Eingabe</h4>
+                            <div class="flex space-x-2 mb-2">
+                                <input type="text" id="new-tgtg-input" placeholder="Andere Eingabe (z.B. Tüte 1)" class="flex-grow border border-stone-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                                <button onclick="addTgtgManualItem()" title="Einfach hinzufügen" class="bg-amber-700 text-white px-4 py-2 rounded-lg hover:bg-amber-800 transition shadow">
+                                    <i class="ph ph-plus text-lg"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <ul id="tgtg-list-neu" class="space-y-2 task-list overflow-y-auto flex-grow min-h-20 max-h-96 pr-2 bg-stone-50 p-2 rounded-lg border border-stone-200 mt-4"></ul>
+                    </div>
+
+
+                    <!-- Card: TGTG Website -->
+                    <div class="bg-white p-6 rounded-2xl shadow-lg flex flex-col border border-stone-200 justify-between">
+                        <div>
+                            <h2 class="text-2xl font-semibold text-amber-800 mb-4 border-b border-amber-200 pb-2">
+                                <i class="ph ph-arrow-square-out inline-block mr-2 text-amber-600 align-middle"></i>
+                                TGTG Verwalten
+                            </h2>
+                            <p class="text-stone-600 mb-4">
+                                Öffnet die TGTG-Website in einem neuen Tab, um die Anzahl der verfügbaren Tüten zu ändern.
+                            </p>
+                        </div>
+                        <a href="https://app.toogoodtogo.com/login" 
+                           target="_blank" 
+                           rel="noopener noreferrer"
+                           class="inline-block w-full text-center bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition shadow-md font-semibold mt-auto">
+                            <i class="ph ph-arrow-square-out mr-1 inline-block"></i>
+                            TGTG-Website öffnen
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Bestätigungs-Modal (für Reset & Delete) -->
+    <div id="confirm-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden" onclick="hideModal()">
+        <!-- Backdrop -->
+        <div id="confirm-modal-backdrop" class="fixed inset-0 bg-black/30 backdrop-blur-sm opacity-0"></div>
+        
+        <!-- Modal Content -->
+        <div id="confirm-modal-content" class="bg-white w-full max-w-md p-6 rounded-2xl shadow-2xl z-10 opacity-0" onclick="event.stopPropagation()">
+            <h3 id="modal-title" class="text-xl font-semibold text-stone-800 mb-2">Aktion bestätigen</h3>
+            <p id="modal-message" class="text-stone-600 mb-6">Möchten Sie diese Aktion wirklich durchführen?</p>
+            <div class="flex justify-end gap-3">
+                <button id="modal-cancel-btn" onclick="hideModal()" class="px-5 py-2 rounded-lg bg-stone-100 text-stone-700 hover:bg-stone-200 transition">
+                    Abbrechen
+                </button>
+                <button id="modal-confirm-btn" onclick="confirmAction()" class="px-5 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition">
+                    Bestätigen
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- ENDE Modal -->
+
+    <!-- Lokales Speicher-Skript -->
+    <script>
+        // --- GLOBAL VARIABLES ---
+        let currentData = {};
+        let staticInfoData = {};
+        let currentDate = new Date();
+        
+        let dailySaveTimer, staticSaveTimer;
+        let dailyStatusTimer, staticStatusTimer;
+        let confirmCallback = null; // Für das Modal
+
+        const STATIC_INFO_KEY = 'bäckerei-static-info';
+
+        // NEU: Produkt-Datenbank
+        const PRODUKT_KATEGORIEN = {
+            "Brot": ["Dinkelbrot", "Roggenbrot", "Sauerteigbrot", "Weizenmischbrot", "Baguette", "Fougasse", "Sonstiges Brot"],
+            "Brötchen": ["Brötchen (normal)", "Körnerbrötchen", "Laugengebäck"],
+            "Süßes": ["Croissant", "Franzbrötchen", "Süßes Stück", "Kuchen", "Kekse", "Granola"],
+            "Sandwich": ["Sandwich (Salami)", "Sandwich (Käse)", "Sandwich (Vegan)"]
+        };
+
+
+        // --- DEFAULT DATA ---
+        function getNewDayData(date) {
+            let data = {
+                frühAufgaben: [
+                    { text: "Produktionsliste (Sandwiches)", done: false },
+                    { text: "Backwaren einräumen", done: false },
+                    { text: "Temperaturliste", done: false },
+                    { text: "Kühlschranklicht anschalten, ggf. aufräumen & auffüllen", done: false },
+                    { text: "Freisitz aufschließen & Oberflächen abwischen + Töpfe raus", done: false },
+                    { text: "Kaffeebereich vorbereiten (Maschine, Bohnen, Milch, Ecke)", done:false },
+                    { text: "MHD Regal & Kühlschrank checken (Eier ab 1 Woche vor Ablauf kühlen)", done: false },
+                    { text: "Schild & Mülleimer rausstellen", done: false },
+                    { text: "Bestellungen packen & beschriften", done: false },
+                    { text: "Safebag (x4) für Belege holen", done: false },
+                    { text: "Bestellung Mio packen (Restaurant)", done: false },
+                    { text: "Fougasse schneiden", done: false },
+                    { text: "Ringe einweichen & spülen", done: false },
+                    { text: "Backwaren nachbestellen", done: false },
+                    { text: "Übergabe mit allen wichtigen Infos für Spätschicht", done: false }
+                ],
+                spätAufgaben: [
+                    { text: "Backwaren nachbestellen!", done: false },
+                    { text: "Bleche & Besteck spülen inkl. Spülmaschine reinigen", done: false },
+                    { text: "Körbe saubermachen & neu einlegen", done: false },
+                    { text: "Auslagen, Scheiben & Kühlschränke saubermachen", done: false },
+                    { text: "Schild & Müll reinholen + Freisitz abschließen", done: false },
+                    { text: "Kaffeemaschine reinigen & Bohnen auffüllen", done: false },
+                    { text: "Brotschneidemaschine saubermachen", done: false },
+                    { text: "Kehren inkl. Vorziehen & hinter Brotschneidemaschine", done: false },
+                    { text: "Reinigungsliste abhaken", done: false },
+                    { text: "Foodsharing (nach Abschrieb!)", done: false },
+                    { text: "Müll & Flaschen runterbringen", done: false },
+                    { text: "Kassenabrechnung + Safebag in Tresor!", done: false },
+                    { text: "Auffüllen: Verpackungen, Becher, Handschuhe, Kaffeeecke, Reinigungsmaterial etc.", done: false },
+                    { text: "alle Oberflächen abwischen (auch bei Kaffeeecke)", done: false }
+                ],
+                sonntagAufgaben: [
+                    { text: "Townhouse ausliefern (+ Unterschriften für ganze Woche holen!)", done: false },
+                    { text: "TGTG Tüten erst am Montag buchen (trotzdem extra Abschrieb)", done: false }
+                ],
+                abschrieb: [], 
+                retoure: [], 
+                tgtg: [],
+                übergabeNotiz: ""
+            };
+            
+            if (date.getDay() === 4) { // Donnerstag
+                data.frühAufgaben.push({ text: "Donnerstags: Kekse & Granola einpacken falls leer", done: false });
+            }
+            return data;
+        }
+
+        // --- PAGE NAVIGATION ---
+        window.showPage = function(pageId, clickedButton) {
+            document.querySelectorAll('.page-content').forEach(page => {
+                page.classList.add('hidden');
+            });
+            document.querySelectorAll('.nav-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            const targetPage = document.getElementById(pageId);
+            if (targetPage) {
+                targetPage.classList.remove('hidden');
+            }
+            if (clickedButton) {
+                clickedButton.classList.add('active');
+            }
+        }
+        
+        // --- MODAL FUNCTIONS ---
+        function showModal(title, message, callback, confirmButtonText = 'Bestätigen', confirmButtonClass = 'bg-red-600 hover:bg-red-700') {
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-message').textContent = message;
+            
+            const confirmBtn = document.getElementById('modal-confirm-btn');
+            confirmBtn.textContent = confirmButtonText;
+            confirmBtn.className = `px-5 py-2 rounded-lg text-white transition ${confirmButtonClass}`;
+            
+            confirmCallback = callback;
+            document.getElementById('confirm-modal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('confirm-modal').classList.add('show'), 10);
+        }
+
+        function hideModal() {
+            const modal = document.getElementById('confirm-modal');
+            modal.classList.remove('show');
+            setTimeout(() => modal.classList.add('hidden'), 200);
+            confirmCallback = null;
+        }
+
+        function confirmAction() {
+            if (typeof confirmCallback === 'function') {
+                confirmCallback();
+            }
+            hideModal();
+        }
+
+        // --- UI & DATE HELPERS ---
+        function getDateString(date) {
+            return date.toISOString().split('T')[0];
+        }
+        
+        // Helfer für Outlook-Datumsformat (YYYYMMDDTHHMMSS)
+        function getOutlookDateTime(date, time) {
+            const combinedISO = `${date}T${time}:00`;
+            const d = new Date(combinedISO);
+            
+            // Konvertiere zu UTC für den Link
+            const year = d.getUTCFullYear();
+            const month = (d.getUTCMonth() + 1).toString().padStart(2, '0');
+            const day = d.getUTCDate().toString().padStart(2, '0');
+            const hours = d.getUTCHours().toString().padStart(2, '0');
+            const minutes = d.getUTCMinutes().toString().padStart(2, '0');
+            
+            return `${year}${month}${day}T${hours}${minutes}00Z`;
+        }
+
+        // Helfer, um Endzeit zu berechnen (z.B. +30 Min)
+        function getOutlookEndDateTime(date, time) {
+            const combinedISO = `${date}T${time}:00`;
+            const d = new Date(combinedISO);
+            
+            d.setMinutes(d.getMinutes() + 30);
+            
+            // Konvertiere zu UTC
+            const year = d.getUTCFullYear();
+            const month = (d.getUTCMonth() + 1).toString().padStart(2, '0');
+            const day = d.getUTCDate().toString().padStart(2, '0');
+            const hours = d.getUTCHours().toString().padStart(2, '0');
+            const minutes = d.getUTCMinutes().toString().padStart(2, '0');
+            
+            return `${year}${month}${day}T${hours}${minutes}00Z`;
+        }
+
+        // Aktualisiert den dynamischen "Kalender öffnen"-Link
+        function updateOutlookViewLink() {
+            const dateString = getDateString(currentDate); // YYYY-MM-DD
+            const linkEl = document.getElementById('dynamic-outlook-link');
+            if (linkEl) {
+                // Link zur Outlook-Tagesansicht für das ausgewählte Datum
+                linkEl.href = `https://outlook.live.com/calendar/view/day?startdt=${dateString}`;
+            }
+        }
+
+
+        function displayCurrentDate() {
+            document.getElementById('current-date').textContent = currentDate.toLocaleDateString('de-DE', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+
+            const sonntagCard = document.getElementById('sonntag-card');
+            if (currentDate.getDay() === 0) { // 0 = Sonntag
+                sonntagCard.classList.remove('hidden');
+            } else {
+                sonntagCard.classList.add('hidden');
+            }
+
+            // Den Outlook-Link jedes Mal aktualisieren, wenn sich das Datum ändert
+            updateOutlookViewLink();
+        }
+
+        window.changeDay = function(offset) {
+            currentDate.setDate(currentDate.getDate() + offset);
+            displayCurrentDate(); // Diese Funktion ruft jetzt updateOutlookViewLink() auf
+            loadDataForDate(currentDate);
+        }
+
+        function showSaveStatus(type) {
+            const [statusEl, timer] = (type === 'static') 
+                ? [document.getElementById('static-save-status'), staticStatusTimer]
+                : [document.getElementById('save-status'), dailyStatusTimer];
+
+            statusEl.style.opacity = '1';
+            
+            if (timer) clearTimeout(timer);
+            const newTimer = setTimeout(() => {
+                statusEl.style.opacity = '0';
+            }, 2000);
+
+            if (type === 'static') {
+                staticStatusTimer = newTimer;
+            } else {
+                dailyStatusTimer = newTimer;
+            }
+        }
+
+        // --- RENDER FUNCTIONS ---
+        function renderChecklist(elementId, items, fieldName) {
+            const listEl = document.getElementById(elementId);
+            listEl.innerHTML = '';
+            if (!items || items.length === 0) {
+                listEl.innerHTML = `<li class="text-stone-500 italic">Keine Aufgaben.</li>`;
+                return;
+            }
+            items.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.className = 'flex items-center';
+                const checkboxId = `${fieldName}-${index}-${Date.now()}`;
+                li.innerHTML = `
+                    <input type="checkbox" id="${checkboxId}" class="h-5 w-5 rounded border-stone-300 text-amber-700 focus:ring-amber-500" ${item.done ? 'checked' : ''}>
+                    <label for="${checkboxId}" class="ml-3 block text-md text-stone-700">${item.text}</label>
+                `;
+                li.querySelector('input').addEventListener('change', (e) => {
+                    updateChecklistItem(fieldName, index, e.target.checked);
+                });
+                listEl.appendChild(li);
+            });
+        }
+
+        function renderStringList(elementId, items, fieldName) {
+            const listEl = document.getElementById(elementId);
+            listEl.innerHTML = '';
+            if (!items || items.length === 0) {
+                listEl.innerHTML = `<li class="text-stone-500 italic px-3 py-2">Keine Einträge.</li>`;
+                return;
+            }
+            items.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.className = 'flex items-center justify-between group bg-white px-3 py-2 rounded-lg';
+                li.innerHTML = `
+                    <span class="text-stone-700 break-all">${item}</span>
+                    <button class="text-stone-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition ml-2">
+                        <i class="ph ph-trash text-lg"></i>
+                    </button>
+                `;
+                li.querySelector('button').addEventListener('click', () => {
+                    deleteDynamicItem(fieldName, index);
+                });
+                listEl.appendChild(li);
+            });
+        }
+
+        function renderDailyData(data) {
+            renderChecklist('frueh-aufgaben-list', data.frühAufgaben, 'frühAufgaben');
+            renderChecklist('spaet-aufgaben-list', data.spätAufgaben, 'spätAufgaben');
+            renderChecklist('sonntag-aufgaben-list', data.sonntagAufgaben, 'sonntagAufgaben');
+            renderStringList('abschrieb-list-neu', data.abschrieb, 'abschrieb'); 
+            renderStringList('retoure-list-neu', data.retoure, 'retoure'); 
+            renderStringList('tgtg-list-neu', data.tgtg, 'tgtg');
+            
+            const notizEl = document.getElementById('uebergabe-notiz');
+            notizEl.value = data.übergabeNotiz;
+        }
+
+        function renderStaticInfo(data) {
+            const staticEl = document.getElementById('static-info-text');
+            staticEl.value = data.text || "";
+        }
+
+        // --- LOCALSTORAGE DATA FUNCTIONS (Daily & Static) ---
+        function saveCurrentDailyData() {
+            const dateString = getDateString(currentDate);
+            localStorage.setItem(dateString, JSON.stringify(currentData));
+            showSaveStatus('daily');
+        }
+
+        function saveCurrentStaticData() {
+            localStorage.setItem(STATIC_INFO_KEY, JSON.stringify(staticInfoData));
+            showSaveStatus('static');
+        }
+
+        function loadDataForDate(date) {
+            const dateString = getDateString(date);
+            let data = localStorage.getItem(dateString);
+            
+            if (data) {
+                currentData = JSON.parse(data);
+                // Konvertiere alte Datenstruktur falls nötig
+                if (currentData.abschreibungen) {
+                    currentData.abschrieb = currentData.abschreibungen;
+                    delete currentData.abschreibungen;
+                }
+                if (currentData.retouren) {
+                    currentData.retoure = currentData.retouren;
+                    delete currentData.retouren;
+                }
+
+                if (!currentData.frühAufgaben) {
+                    const freshData = getNewDayData(date);
+                    currentData = {...freshData, ...currentData};
+                }
+            } else {
+                console.log(`No local data for ${dateString}, creating...`);
+                currentData = getNewDayData(date);
+                saveCurrentDailyData();
+            }
+            renderDailyData(currentData);
+        }
+
+        function loadStaticInfo() {
+            let data = localStorage.getItem(STATIC_INFO_KEY);
+            if (data) {
+                staticInfoData = JSON.parse(data);
+            } else {
+                staticInfoData = { text: "Hier wichtige Infos eintragen (z.B. Allergene, Aktionen...)" };
+                saveCurrentStaticData();
+            }
+            renderStaticInfo(staticInfoData);
+        }
+
+        function updateChecklistItem(fieldName, index, isDone) {
+            if (currentData && currentData[fieldName] && currentData[fieldName][index] != null) {
+                currentData[fieldName][index].done = isDone;
+                saveCurrentDailyData();
+            }
+        }
+
+        // --- ZENTRALE SPEICHERFUNKTION FÜR ABSCHRIEB/RETOURE/TGTG ---
+        function saveAndRenderItem(fieldName, newText) {
+            if (!currentData[fieldName]) {
+                currentData[fieldName] = [];
+            }
+            currentData[fieldName].push(newText);
+            saveCurrentDailyData();
+
+            if (fieldName === 'abschrieb') {
+                renderStringList('abschrieb-list-neu', currentData.abschrieb, 'abschrieb');
+            } else if (fieldName === 'retoure') {
+                renderStringList('retoure-list-neu', currentData.retoure, 'retoure');
+            } else if (fieldName === 'tgtg') { 
+                renderStringList('tgtg-list-neu', currentData.tgtg, 'tgtg');
+            }
+        }
+
+        // --- NEUE FUNKTION für Produktauswahl (vereinheitlicht) ---
+        window.addProduktItem = function() {
+            const typ = document.querySelector('input[name="eintrag-typ"]:checked').value; // 'abschrieb' oder 'retoure'
+            const produktSelectEl = document.getElementById('select-eintrag-produkt');
+            const mengeInputEl = document.getElementById('input-eintrag-menge');
+            
+            const product = produktSelectEl.value;
+            const menge = mengeInputEl.value.trim();
+
+            if (!product) {
+                alert("Bitte ein Produkt auswählen.");
+                return;
+            }
+            if (!menge || parseInt(menge) <= 0) {
+                alert("Bitte eine gültige Menge eingeben.");
+                return;
+            }
+
+            const newText = `${menge}x ${product}`; // Format: "5x Dinkelbrot"
+            saveAndRenderItem(typ, newText);
+
+            // Reset inputs - NUR MENGE ZURÜCKSETZEN
+            // produktSelectEl.value = ""; // Bleibt ausgewählt
+            mengeInputEl.value = ""; // Nur Menge zurücksetzen
+            // document.getElementById('select-eintrag-kategorie').value = ""; // Bleibt ausgewählt
+        }
+
+        // --- NEUE FUNKTION für manuelle Eingabe (vereinheitlicht) ---
+        window.addManualItem = function() {
+            const typ = document.querySelector('input[name="eintrag-typ"]:checked').value; // 'abschrieb' oder 'retoure'
+            const inputEl = document.getElementById('new-eintrag-input');
+            const newText = inputEl.value.trim();
+            if (!newText) return;
+
+            saveAndRenderItem(typ, newText);
+            inputEl.value = '';
+        }
+
+        // --- NEUE TGTG FUNKTIONEN ---
+        window.addTgtgProduktItem = function() {
+            const produktSelectEl = document.getElementById('select-tgtg-produkt');
+            const mengeInputEl = document.getElementById('input-tgtg-menge');
+            
+            const product = produktSelectEl.value;
+            const menge = mengeInputEl.value.trim();
+
+            if (!product) {
+                alert("Bitte ein Produkt auswählen.");
+                return;
+            }
+            if (!menge || parseInt(menge) <= 0) {
+                alert("Bitte eine gültige Menge eingeben.");
+                return;
+            }
+
+            const newText = `${menge}x ${product}`; // Format: "5x Dinkelbrot"
+            saveAndRenderItem('tgtg', newText);
+
+            // Reset inputs - NUR MENGE ZURÜCKSETZEN
+            mengeInputEl.value = ""; 
+        }
+
+        window.addTgtgManualItem = function() {
+            const inputEl = document.getElementById('new-tgtg-input');
+            const newText = inputEl.value.trim();
+            if (!newText) return;
+
+            saveAndRenderItem('tgtg', newText); // Benutzt die zentrale Funktion
+            inputEl.value = '';
+        }
+
+
+        window.deleteDynamicItem = function(fieldName, index) {
+            if (currentData && currentData[fieldName]) {
+                currentData[fieldName].splice(index, 1);
+                saveCurrentDailyData();
+                
+                if (fieldName === 'abschrieb') { 
+                    renderStringList('abschrieb-list-neu', currentData.abschrieb, 'abschrieb'); 
+                } else if (fieldName === 'retoure') { 
+                    renderStringList('retoure-list-neu', currentData.retoure, 'retoure'); 
+                } else if (fieldName === 'tgtg') {
+                    renderStringList('tgtg-list-neu', currentData.tgtg, 'tgtg');
+                }
+            }
+        }
+        
+        // --- PRINT FUNCTION ---
+        window.printTagesabschluss = function() {
+            const abs = currentData.abschrieb || []; 
+            const ret = currentData.retoure || []; 
+            const date = currentDate.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+            let content = `
+                <html>
+                <head>
+                    <title>Abschrieb ${date}</title> 
+                    <style>
+                        body { font-family: sans-serif; line-height: 1.5; padding: 20px; }
+                        h1 { color: #111; text-align: center; }
+                        h2 { color: #333; border-bottom: 2px solid #eee; padding-bottom: 5px; margin-top: 20px; }
+                        ul { list-style-type: none; padding-left: 0; }
+                        li { background-color: #f9f9f9; border: 1px solid #eee; padding: 8px 12px; margin-bottom: 5px; border-radius: 4px; }
+                        .no-items { color: #777; font-style: italic; background: none; border: none; padding: 0; }
+                        
+                        .container {
+                            display: flex;
+                            gap: 20px; 
+                            align-items: flex-start; 
+                        }
+                        .column {
+                            flex: 1; 
+                            min-width: 0; 
+                        }
+                    </style>
+                </head>
+                <body>
+                    <h1>Abschrieb für ${date}</h1> 
+                    
+                    <div class="container">
+                        <div class="column">
+                            <h2>Abschrieb</h2> 
+                            <ul>${abs.length ? abs.map(item => `<li>${item}</li>`).join('') : '<li class="no-items">Keine Einträge</li>'}</ul>
+                        </div>
+                        
+                        <div class="column">
+                            <h2>Retoure</h2> 
+                            <ul>${ret.length ? ret.map(item => `<li>${item}</li>`).join('') : '<li class="no-items">Keine Einträge</li>'}</ul>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `;
+
+            const printWindow = window.open('', '_blank');
+            printWindow.document.open();
+            printWindow.document.write(content);
+            printWindow.document.close();
+            
+            setTimeout(() => {
+                printWindow.focus();
+                printWindow.print();
+            }, 250);
+        }
+        
+        // --- RESET FUNCTION ---
+        window.resetTasksForToday = function() {
+            showModal(
+                'Aufgaben zurücksetzen',
+                'Möchten Sie wirklich alle Häkchen für die Früh-, Spät- und Sonntagsschicht für den ' + currentDate.toLocaleDateString('de-DE') + ' entfernen? Notizen und Tagesabschluss bleiben erhalten.',
+                () => {
+                    console.log('Resetting tasks for ' + getDateString(currentDate));
+                    const freshData = getNewDayData(currentDate);
+                    
+                    currentData.frühAufgaben = freshData.frühAufgaben;
+                    currentData.spätAufgaben = freshData.spätAufgaben;
+                    currentData.sonntagAufgaben = freshData.sonntagAufgaben;
+                    
+                    saveCurrentDailyData();
+                    renderDailyData(currentData);
+                },
+                'Ja, zurücksetzen',
+                'bg-red-600 hover:bg-red-700'
+            );
+        }
+
+        // --- DEBOUNCED SAVE FUNCTIONS ---
+        function updateNotes() {
+            currentData.übergabeNotiz = document.getElementById('uebergabe-notiz').value;
+            saveCurrentDailyData();
+        }
+
+        window.debouncedUpdateNotes = function() {
+            clearTimeout(dailySaveTimer);
+            dailySaveTimer = setTimeout(updateNotes, 500);
+        }
+
+        function updateStaticInfo() {
+            staticInfoData.text = document.getElementById('static-info-text').value;
+            saveCurrentStaticData();
+        }
+
+        window.debouncedUpdateStaticInfo = function() {
+            clearTimeout(staticSaveTimer);
+            staticSaveTimer = setTimeout(updateStaticInfo, 500);
+        }
+
+        // --- OUTLOOK-HELFER FUNKTION ---
+        function handleOutlookSubmit(event) {
+            event.preventDefault();
+            
+            // Werte aus dem Formular holen
+            const date = document.getElementById('order-date').value;
+            const time = document.getElementById('order-time').value;
+            const customer = document.getElementById('order-customer').value;
+            const detailsRaw = document.getElementById('order-details').value;
+            const mitarbeiter = document.getElementById('order-mitarbeiter').value;
+            const telefon = document.getElementById('order-telefon').value;
+            const bezahlt = document.getElementById('order-bezahlt').checked ? 'Ja' : 'Nein';
+            const includePatisserie = document.getElementById('order-patisserie').checked;
+            
+            if (!date || !time || !customer || !detailsRaw || !mitarbeiter) {
+                alert("Bitte füllen Sie alle Felder aus (Telefon ist optional).");
+                return;
+            }
+
+            // E-Mail-Adressen (anpassen falls nötig)
+            let recipientList = ["baeckerei@macis-leipzig.de", "backverkauf@macis-leipzig.de"];
+            if (includePatisserie) {
+                recipientList.push("patisserie@macis-leipzig.de");
+            }
+            const recipients = recipientList.join(','); 
+            
+            // Formatieren der Zeiten für den Link
+            const startTime = getOutlookDateTime(date, time);
+            const endTime = getOutlookEndDateTime(date, time); // 30 Minuten später
+
+            // Produkte formatieren (trennt bei Komma ODER Zeilenumbruch)
+            const productList = detailsRaw
+                .split(/[\n,]+/) // Trennt bei Zeilenumbruch ODER Komma
+                .map(item => item.trim()) // Entfernt Leerzeichen
+                .filter(item => item.length > 0) // Entfernt leere Zeilen
+                .map(item => `• ${item}`) // Fügt Bullet-Point hinzu
+                .join('<br>'); // Benutze <br>
+
+            // Body-Template erstellen
+            const abholZeitString = `${new Date(date + 'T' + time).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })} um ${time} Uhr`;
+            
+            // Baue den Body direkt mit <br> auf
+            const body = `Name: ${customer}<br>Mitarbeiter: ${mitarbeiter}<br>Telefonnummer: ${telefon || 'Keine Angabe'}<br>Bezahlt: ${bezahlt}<br>Abholen: ${abholZeitString}<br><br>Produkte:<br>${productList}`;
+
+            // Erstellen des Kalender-Links
+            let url = "https://outlook.live.com/calendar/0/deeplink/compose?";
+            url += "path=/calendar/view/month";
+            url += "&rru=addevent";
+            url += "&subject=" + encodeURIComponent(customer); // Kunde als Betreff
+            url += "&startdt=" + startTime;
+            url += "&enddt=" + endTime;
+            url += "&body=" + encodeURIComponent(body); // HTML formatierter Body
+            url += "&to=" + encodeURIComponent(recipients); 
+            url += "&bodyformat=HTML"; // Sage Outlook, dass der Body HTML ist
+
+            console.log("Opening Outlook link:", url);
+            window.open(url, '_blank');
+            
+            // Formular zurücksetzen
+            document.getElementById('outlook-form').reset();
+            // Datum wieder auf heute setzen für den nächsten Eintrag
+            document.getElementById('order-date').value = getDateString(new Date());
+        }
+        
+        // --- HILFSFUNKTIONEN für kaskadierende Dropdowns (vereinheitlicht) ---
+        
+        // Aktualisiert das Produkt-Dropdown basierend auf der Kategorie
+        window.updateProduktDropdown = function() {
+            const kategorieSelect = document.getElementById(`select-eintrag-kategorie`);
+            const produktSelect = document.getElementById(`select-eintrag-produkt`);
+            const selectedKategorie = kategorieSelect.value;
+            
+            produktSelect.innerHTML = '<option value="">-- Produkt --</option>'; // Reset
+            
+            if (selectedKategorie && PRODUKT_KATEGORIEN[selectedKategorie]) {
+                PRODUKT_KATEGORIEN[selectedKategorie].forEach(produkt => {
+                    const option = document.createElement('option');
+                    option.value = produkt;
+                    option.textContent = produkt;
+                    produktSelect.appendChild(option);
+                });
+            }
+        }
+        
+        // NEU: Eigene Update-Funktion für TGTG-Dropdown
+        window.updateTgtgProduktDropdown = function() {
+            const kategorieSelect = document.getElementById(`select-tgtg-kategorie`);
+            const produktSelect = document.getElementById(`select-tgtg-produkt`);
+            const selectedKategorie = kategorieSelect.value;
+            
+            produktSelect.innerHTML = '<option value="">-- Produkt --</option>'; // Reset
+            
+            if (selectedKategorie && PRODUKT_KATEGORIEN[selectedKategorie]) {
+                PRODUKT_KATEGORIEN[selectedKategorie].forEach(produkt => {
+                    const option = document.createElement('option');
+                    option.value = produkt;
+                    option.textContent = produkt;
+                    produktSelect.appendChild(option);
+                });
+            }
+        }
+
+
+        // Füllt die Kategorie-Dropdowns beim Start
+        function populateKategorieDropdowns() {
+            const kategorien = Object.keys(PRODUKT_KATEGORIEN);
+            const kategorieSelect = document.getElementById('select-eintrag-kategorie');
+            const tgtgKategorieSelect = document.getElementById('select-tgtg-kategorie'); // NEU
+            
+            kategorieSelect.innerHTML = '<option value="">-- Kategorie --</option>';
+            tgtgKategorieSelect.innerHTML = '<option value="">-- Kategorie --</option>'; // NEU
+            
+            kategorien.forEach(kategorie => {
+                const option1 = document.createElement('option');
+                option1.value = kategorie;
+                option1.textContent = kategorie;
+                kategorieSelect.appendChild(option1);
+
+                // NEU: Auch TGTG-Dropdown füllen
+                const option2 = document.createElement('option');
+                option2.value = kategorie;
+                option2.textContent = kategorie;
+                tgtgKategorieSelect.appendChild(option2);
+            });
+        }
+
+
+        // --- INITIALIZATION ---
+        function init() {
+            console.log("App starting in local-only mode.");
+            // Tägliche Daten
+            displayCurrentDate(); // Diese Funktion aktualisiert jetzt auch den Outlook-Link
+            loadStaticInfo();
+            loadDataForDate(currentDate);
+            
+            // Kategorie-Dropdowns füllen
+            populateKategorieDropdowns();
+
+            // Event Listeners
+            document.getElementById('outlook-form').addEventListener('submit', handleOutlookSubmit);
+            // Heutiges Datum im Bestellformular eintragen
+            document.getElementById('order-date').value = getDateString(new Date());
+
+            // Set initial page
+            showPage('page-uebergabe', document.getElementById('nav-btn-uebergabe'));
+        }
+
+        // Run the app
+        init();
+
+    </script>
+</body>
+</html>
+
