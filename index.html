@@ -57,8 +57,9 @@
     <div class="container mx-auto max-w-5xl p-4 md:p-8">
 
         <!-- Header and Date Navigation -->
-        <header class="flex justify-between items-center mb-4 border-b border-stone-200 pb-4">
-            <div>
+        <header class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 border-b border-stone-200 pb-4">
+            <!-- NEU: w-full sm:w-auto mb-4 sm:mb-0 -->
+            <div class="w-full sm:w-auto mb-4 sm:mb-0">
                 <!-- Logo: Versucht Online-Bild zu laden, mit Text-Fallback -->
                 <img src="https://macis-leipzig.de/wp-content/uploads/2019/03/Macis-Logo-Leipzig.png" 
                      alt="Macis Logo" 
@@ -85,26 +86,24 @@
         </header>
 
         <!-- Reiter-Navigation -->
-        <nav class="flex items-center space-x-2 md:space-x-4 mb-8 bg-white p-2 rounded-lg shadow-sm border border-stone-200">
-            <button id="nav-btn-uebergabe" onclick="showPage('page-uebergabe', this)" class="nav-button active text-sm md:text-lg font-semibold px-2 md:px-4 py-3 text-stone-600 hover:text-amber-700 flex-1 flex items-center justify-center gap-2">
+        <nav class="flex flex-col md:flex-row md:space-x-2 mb-8 bg-white p-2 rounded-lg shadow-sm border border-stone-200">
+            <button id="nav-btn-uebergabe" onclick="showPage('page-uebergabe', this)" class="nav-button active text-sm md:text-lg font-semibold px-2 md:px-4 py-3 text-stone-600 hover:text-amber-700 w-full md:flex-1 flex items-center justify-center gap-2">
                 <i class="ph ph-notebook text-xl"></i>
                 <span>Übergabe</span>
             </button>
-            <button id="nav-btn-schichten" onclick="showPage('page-schichten', this)" class="nav-button text-sm md:text-lg font-semibold px-2 md:px-4 py-3 text-stone-600 hover:text-amber-700 flex-1 flex items-center justify-center gap-2">
+            <button id="nav-btn-schichten" onclick="showPage('page-schichten', this)" class="nav-button text-sm md:text-lg font-semibold px-2 md:px-4 py-3 text-stone-600 hover:text-amber-700 w-full md:flex-1 flex items-center justify-center gap-2">
                 <i class="ph ph-sun-horizon text-xl"></i>
                 <span>Schichten</span>
             </button>
-            <!-- Reiter "Bestellungen" (Outlook-Helfer) -->
-            <button id="nav-btn-bestellungen" onclick="showPage('page-bestellungen', this)" class="nav-button text-sm md:text-lg font-semibold px-2 md:px-4 py-3 text-stone-600 hover:text-amber-700 flex-1 flex items-center justify-center gap-2">
+            <button id="nav-btn-bestellungen" onclick="showPage('page-bestellungen', this)" class="nav-button text-sm md:text-lg font-semibold px-2 md:px-4 py-3 text-stone-600 hover:text-amber-700 w-full md:flex-1 flex items-center justify-center gap-2">
                 <i class="ph ph-calendar-plus text-xl"></i>
                 <span>Bestellungen</span>
             </button>
-            <button id="nav-btn-abschluss" onclick="showPage('page-abschluss', this)" class="nav-button text-sm md:text-lg font-semibold px-2 md:px-4 py-3 text-stone-600 hover:text-amber-700 flex-1 flex items-center justify-center gap-2">
+            <button id="nav-btn-abschluss" onclick="showPage('page-abschluss', this)" class="nav-button text-sm md:text-lg font-semibold px-2 md:px-4 py-3 text-stone-600 hover:text-amber-700 w-full md:flex-1 flex items-center justify-center gap-2">
                 <i class="ph ph-bank text-xl"></i>
                 <span>Abschrieb</span> 
             </button>
-            <!-- NEUER TGTG REITER -->
-            <button id="nav-btn-tgtg" onclick="showPage('page-tgtg', this)" class="nav-button text-sm md:text-lg font-semibold px-2 md:px-4 py-3 text-stone-600 hover:text-amber-700 flex-1 flex items-center justify-center gap-2">
+            <button id="nav-btn-tgtg" onclick="showPage('page-tgtg', this)" class="nav-button text-sm md:text-lg font-semibold px-2 md:px-4 py-3 text-stone-600 hover:text-amber-700 w-full md:flex-1 flex items-center justify-center gap-2">
                 <i class="ph ph-package text-xl"></i>
                 <span>TGTG</span>
             </button>
@@ -801,7 +800,7 @@
             }
         }
 
-        // --- NEUE FUNKTION für Produktauswahl (vereinheitlicht) ---
+        // --- FUNKTION für Produktauswahl (Abschrieb/Retoure) ---
         window.addProduktItem = function() {
             const typ = document.querySelector('input[name="eintrag-typ"]:checked').value; // 'abschrieb' oder 'retoure'
             const produktSelectEl = document.getElementById('select-eintrag-produkt');
@@ -822,13 +821,10 @@
             const newText = `${menge}x ${product}`; // Format: "5x Dinkelbrot"
             saveAndRenderItem(typ, newText);
 
-            // Reset inputs - NUR MENGE ZURÜCKSETZEN
-            // produktSelectEl.value = ""; // Bleibt ausgewählt
             mengeInputEl.value = ""; // Nur Menge zurücksetzen
-            // document.getElementById('select-eintrag-kategorie').value = ""; // Bleibt ausgewählt
         }
 
-        // --- NEUE FUNKTION für manuelle Eingabe (vereinheitlicht) ---
+        // --- FUNKTION für manuelle Eingabe (Abschrieb/Retoure) ---
         window.addManualItem = function() {
             const typ = document.querySelector('input[name="eintrag-typ"]:checked').value; // 'abschrieb' oder 'retoure'
             const inputEl = document.getElementById('new-eintrag-input');
@@ -839,7 +835,7 @@
             inputEl.value = '';
         }
 
-        // --- NEUE TGTG FUNKTIONEN ---
+        // --- TGTG FUNKTIONEN ---
         window.addTgtgProduktItem = function() {
             const produktSelectEl = document.getElementById('select-tgtg-produkt');
             const mengeInputEl = document.getElementById('input-tgtg-menge');
@@ -858,8 +854,6 @@
 
             const newText = `${menge}x ${product}`; // Format: "5x Dinkelbrot"
             saveAndRenderItem('tgtg', newText);
-
-            // Reset inputs - NUR MENGE ZURÜCKSETZEN
             mengeInputEl.value = ""; 
         }
 
@@ -868,8 +862,18 @@
             const newText = inputEl.value.trim();
             if (!newText) return;
 
-            saveAndRenderItem('tgtg', newText); // Benutzt die zentrale Funktion
+            saveAndRenderItem('tgtg', newText);
             inputEl.value = '';
+        }
+
+        // Fallback für TGTG (alte Funktion)
+        window.addDynamicItem = function(fieldName, inputId) {
+             const inputEl = document.getElementById(inputId);
+             const newText = inputEl.value.trim();
+             if (!newText) return;
+             if (fieldName !== 'tgtg') return; 
+             saveAndRenderItem(fieldName, newText);
+             inputEl.value = '';
         }
 
 
@@ -892,6 +896,7 @@
         window.printTagesabschluss = function() {
             const abs = currentData.abschrieb || []; 
             const ret = currentData.retoure || []; 
+            const tgtg = currentData.tgtg || []; // WIEDER HINZUGEFÜGT
             const date = currentDate.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
             let content = `
@@ -929,6 +934,12 @@
                         <div class="column">
                             <h2>Retoure</h2> 
                             <ul>${ret.length ? ret.map(item => `<li>${item}</li>`).join('') : '<li class="no-items">Keine Einträge</li>'}</ul>
+                        </div>
+
+                        <!-- TGTG-SPALTE WIEDER HINZUGEFÜGT -->
+                        <div class="column">
+                            <h2>TGTG</h2>
+                            <ul>${tgtg.length ? tgtg.map(item => `<li>${item}</li>`).join('') : '<li class="no-items">Keine Einträge</li>'}</ul>
                         </div>
                     </div>
                 </body>
