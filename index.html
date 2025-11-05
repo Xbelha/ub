@@ -50,12 +50,53 @@
     /* 📱 Tablet landscape layout tweaks */
     @media (min-width: 1024px) and (orientation: landscape) {
       main.dashboard-grid { display:grid; grid-template-columns: 1fr 1fr; gap:1rem }
-      #tab-dashboard, #tab-shifts, #tab-orders, #tab-history { grid-column: span 2 }
+      #tab-dashboard, #tab-shifts, #tab-orders, #tab-allergene { grid-column: span 2 }
       .dashboard-rows { display:grid; grid-template-columns: 1fr 1fr; gap:1rem }
     }
 
     /* subtle branding accents */
     .btn-primary:hover { background:#fbbf24 }
+
+    /* NEU: Modal-Stile */
+    #modal-backdrop { transition: opacity 0.2s ease-in-out; }
+    #modal-content { transition: all 0.2s ease-in-out; transform: scale(0.95); }
+    #product-modal.show #modal-backdrop { opacity: 1; }
+    #product-modal.show #modal-content { opacity: 1; transform: scale(1); }
+    
+    /* NEU: Allergen-Pillen-Stil (im JS verwendet) */
+    .pill-allergen {
+        font-size: .75rem; /* 12px */
+        padding: .15rem .5rem;
+        border-radius: 999px;
+        font-weight: 500;
+        background-color: rgba(220, 38, 38, 0.1); /* bg-red-900/10 -> heller */
+        border: 1px solid rgba(220, 38, 38, 0.4); /* border-red-500/40 */
+        color: rgba(253, 164, 175, 0.9); /* text-red-300/90 */
+        margin-right: 4px;
+        margin-bottom: 4px;
+        display: inline-block;
+    }
+    
+    /* NEU: Filter-Button-Stil */
+    .filter-btn {
+        background-color: #0f0f10;
+        border: 1px solid #3a3a40;
+        color: #e5e7eb;
+    }
+    .filter-btn:hover {
+        background-color: #1f1f21;
+    }
+    .filter-btn.active {
+        background:rgba(245,158,11,.25); 
+        color:#fde68a; 
+        outline:1px solid rgba(245,158,11,.6);
+        border-color: rgba(245,158,11,.6);
+    }
+
+    /* NEU: Admin-Elemente standardmäßig verstecken */
+    .admin-only {
+        display: none;
+    }
   </style>
 </head>
 <body class="min-h-full">
@@ -63,15 +104,11 @@
   <!-- Header -->
   <header class="no-print sticky top-0 z-40 border-b border-neutral-800 bg-[#0e0e10]/95 backdrop-blur">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-3">
-      <!-- === HIER IST DIE ÄNDERUNG (LOGO) === -->
       <div class="flex items-center gap-3 select-none">
-        <!-- NEUES LOGO -->
         <img src="https://i.imgur.com/eGNSNJ9.png" alt="Logo" class="h-10" onerror="this.style.display='none'; document.getElementById('logo-fallback-text').style.display='block'">
-        <!-- Fallback-Text, falls Bild nicht lädt -->
         <span id="logo-fallback-text" class="text-2xl font-extrabold text-amber-300" style="display:none;">macis</span> 
         <span class="text-xs px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-200">Backverkauf</span>
       </div>
-      <!-- === ENDE DER ÄNDERUNG === -->
 
       <div id="cloudState" class="pill ms-2">🔄</div>
       <div class="ms-auto flex items-center gap-2">
@@ -87,14 +124,13 @@
         <button id="prevDay" class="tab" aria-label="Vorheriger Tag"><i class="ph ph-caret-left"></i></button>
         <div id="current-date" class="text-xl font-bold tabular-nums text-amber-300">--.--.----</div>
         <button id="nextDay" class="tab" aria-label="Nächster Tag"><i class="ph ph-caret-right"></i></button>
-        <!-- ENTFERNT: <span id="business-cutover" class="pill" title="Tageswechsel um 03:00">⏰ Tageswechsel 03:00</span> -->
       </div>
       <nav class="ms-auto">
         <ul class="flex flex-wrap gap-1.5" role="tablist">
           <li><button class="tab active" data-tab="dashboard"><i class="ph ph-layout"></i> Dashboard</button></li>
           <li><button class="tab" data-tab="shifts"><i class="ph ph-sun-horizon"></i> Schichten</button></li>
           <li><button class="tab" data-tab="orders"><i class="ph ph-calendar-plus"></i> Bestellungen</button></li>
-          <li><button class="tab" data-tab="history"><i class="ph ph-calendar"></i> Verlauf</button></li>
+          <li><button class="tab" data-tab="allergene"><i class="ph ph-warning-diamond"></i> Allergene</button></li>
           <li><button class="tab" data-tab="settings"><i class="ph ph-gear-six"></i> Einstellungen</button></li>
         </ul>
       </nav>
@@ -142,11 +178,11 @@
       <div class="flex flex-wrap gap-3 justify-between items-center">
         <div class="flex items-center gap-4">
           <label class="text-sm flex items-center gap-2"><input id="onlyOpen" type="checkbox" class="align-[-2px]" checked> Nur offene</label>
-          <label class="text-sm flex items-center gap-2"><input id="adminToggle" type="checkbox" class="align-[-2px]"> Admin-Modus</label>
+          <!-- ADMIN-TOGGLE VON HIER ENTFERNT -->
         </div>
         <div class="flex gap-2">
           <button id="resetTasks" class="btn btn-secondary">Alle Aufgaben zurücksetzen</button>
-          <button id="addTaskBtn" class="btn btn-primary">+ Aufgabe hinzufügen</button>
+          <button id="addTaskBtn" class="btn btn-primary admin-only">+ Aufgabe hinzufügen</button>
         </div>
       </div>
 
@@ -218,19 +254,44 @@
       </article>
     </section>
 
-    <!-- HISTORY -->
-    <section id="tab-history" class="tab-panel hidden grid gap-6">
-      <article class="card">
-        <h2 class="font-bold text-amber-200 mb-3 flex items-center gap-2"><i class="ph ph-calendar"></i> Archivierte Übergaben</h2>
-        <ul id="archive-list" class="space-y-3"></ul>
-      </article>
+    <!-- ALLERGENE TAB -->
+    <section id="tab-allergene" class="tab-panel hidden grid gap-6">
+      
+      <!-- FILTER/SEARCH-LAYOUT -->
+      <div class="card">
+        <div class="flex flex-col md:flex-row gap-4 justify-between md:items-center">
+          <div class="flex-1">
+            <label class="text-sm" for="allergen-search">Produkt suchen</label>
+            <input id="allergen-search" class="input mt-1" placeholder="z.B. Kruste, Croissant, Vegan...">
+          </div>
+          <div class="flex-shrink-0">
+            <label class="text-sm block mb-1">Kategorie</label>
+            <div id="allergen-filter-buttons" class="flex flex-wrap gap-2">
+              <button class="btn filter-btn active" data-filter-category="all">Alle</button>
+              <button class="btn filter-btn" data-filter-category="bread">Brot</button>
+              <button class="btn filter-btn" data-filter-category="broetchen">Brötchen</button>
+              <button class="btn filter-btn" data-filter-category="sweet">Süßes</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-between items-center">
+        <h2 class="font-bold text-amber-200 text-2xl flex items-center gap-2"><i class="ph ph-warning-diamond"></i> Produktdatenbank</h2>
+        <button id="add-product-btn" class="btn btn-primary admin-only"><i class="ph ph-plus"></i> Neues Produkt</button>
+      </div>
+      
+      <div id="allergen-results" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Produktkarten werden hier von app.js eingefügt -->
+      </div>
     </section>
 
     <!-- SETTINGS -->
     <section id="tab-settings" class="tab-panel hidden grid gap-6">
       <article class="card">
         <h2 class="font-bold text-amber-200 mb-3 flex items-center gap-2"><i class="ph ph-gear-six"></i> Einstellungen</h2>
-        <div class="grid md:grid-cols-2 gap-4">
+        <!-- Grid auf md:grid-cols-3 geändert -->
+        <div class="grid md:grid-cols-3 gap-4">
           <div>
             <label class="text-sm" for="cfg-recip">Standard-Empfänger (Komma getrennt)</label>
             <input id="cfg-recip" class="input" placeholder="baeckerei@..., backverkauf@...">
@@ -239,11 +300,58 @@
             <label class="text-sm" for="cfg-pat">Pâtisserie-Empfänger</label>
             <input id="cfg-pat" class="input" placeholder="patisserie@...">
           </div>
+          <!-- NEUER ADMIN-TOGGLE HIER -->
+          <div>
+            <label class="text-sm block mb-1">Admin-Modus</label>
+            <label class="mt-2 text-base flex items-center gap-2 p-2 border border-neutral-700 rounded-lg h-[46px]"> <!-- H-angepasst -->
+                <input id="adminToggle" type="checkbox" class="h-5 w-5 rounded accent-[var(--brand)]"> 
+                Bearbeitungsmodus
+            </label>
+          </div>
         </div>
       </article>
     </section>
 
   </main>
+
+  <!-- Produkt Modal (hidden by default) -->
+  <div id="product-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden" onclick="hideProductModal()">
+    <!-- Backdrop -->
+    <div id="modal-backdrop" class="fixed inset-0 bg-black/30 backdrop-blur-sm opacity-0"></div>
+    
+    <!-- Modal Content -->
+    <div id="modal-content" class="card w-full max-w-lg z-10 opacity-0" onclick="event.stopPropagation()">
+        <h3 id="modal-title" class="font-bold text-amber-200 text-xl mb-4">Produkt bearbeiten</h3>
+        <form id="product-form" class="space-y-4">
+            <input type="hidden" id="product-id">
+            <div>
+                <label class="text-sm" for="product-name">Produktname</label>
+                <input id="product-name" type="text" class="input mt-1" required>
+            </div>
+            <div>
+                <label class="text-sm" for="product-category">Kategorie</label>
+                <input id="product-category" type="text" class="input mt-1" placeholder="z.B. bread, sweet, broetchen">
+            </div>
+            <div>
+                <label class="text-sm" for="product-allergens">Allergene (Komma-getrennt)</label>
+                <textarea id="product-allergens" rows="3" class="textarea mt-1" placeholder="z.B. Gluten, Milch, Eier"></textarea>
+            </div>
+            <div>
+                <label class="text-sm" for="product-img">Bild-URL (Optional)</label>
+                <input id="product-img" type="url" class="input mt-1" placeholder="https://...">
+            </div>
+            <div class="flex justify-end gap-3 pt-4 border-t border-neutral-800">
+                <button id="modal-cancel-btn" type="button" onclick="hideProductModal()" class="btn btn-secondary">
+                    Abbrechen
+                </button>
+                <button id="modal-save-btn" type="submit" class="btn btn-primary">
+                    Speichern
+                </button>
+            </div>
+        </form>
+    </div>
+  </div>
+  <!-- ENDE Modal -->
 
   <!-- JS at the end so DOM is ready -->
   <script src="app.js"></script>
