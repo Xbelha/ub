@@ -1,1058 +1,251 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" class="h-full dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bäckerei Übergabe (Lokal)</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:wght@700&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/@phosphor-icons/web@2.0.3/src/index.js"></script>
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #fffbeb; /* amber-50 */
-        }
-        input[type="checkbox"]:checked + label {
-            text-decoration: line-through;
-            color: #78716c; /* stone-500 */
-        }
-        .task-list::-webkit-scrollbar { width: 6px; }
-        .task-list::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
-        .task-list::-webkit-scrollbar-thumb { background: #d4a75c; border-radius: 10px; }
-        
-        /* Stile für die Nav-Buttons */
-        .nav-button {
-            transition: all 0.2s ease-in-out;
-            border-bottom: 3px solid transparent;
-        }
-        .nav-button.active {
-            color: #b45309; /* amber-700 */
-            border-bottom-color: #b45309; /* amber-700 */
-        }
-        .font-logo {
-            font-family: 'Lora', serif;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-        }
+  <meta charset="utf-f-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Macis • Backverkauf</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/@phosphor-icons/web@2.1.1/src/index.js"></script>
+  <style>
+    :root { --brand:#f59e0b }
+    html,body { height:100% }
+    body { background:#0b0b0b; color:#e5e7eb; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial }
+    
+    /* Card-Stil: Übergang hinzugefügt */
+    .card { background:#111113; border:1px solid #2f2f33; border-radius:1rem; padding:1rem; transition: box-shadow 0.2s ease, border-color 0.2s ease; }
+    .card:hover { box-shadow: 0 0 8px rgba(245,158,11,.1) } /* Sanfter Hover */
 
-        /* Stile für das Bestätigungs-Modal */
-        #confirm-modal-backdrop {
-            transition: opacity 0.2s ease-in-out;
-        }
-        #confirm-modal-content {
-            transition: all 0.2s ease-in-out;
-            transform: scale(0.95);
-        }
-        #confirm-modal.show #confirm-modal-backdrop {
-            opacity: 1;
-        }
-        #confirm-modal.show #confirm-modal-content {
-            opacity: 1;
-            transform: scale(1);
-        }
-    </style>
+    /* Highlight-Karte */
+    .card-highlight {
+        border-color: rgba(245, 158, 11, .5); /* Brand border color */
+        box-shadow: 0 0 12px rgba(245, 158, 11, .2); /* Brand glow */
+    }
+    .card-highlight:hover {
+        border-color: rgba(245, 158, 11, .7);
+        box-shadow: 0 0 16px rgba(245, 158, 11, .3); /* Stärkerer Glow beim Hover */
+    }
+
+    .input,.select,.textarea { width:100%; background:#0f0f10; border:1px solid #3a3a40; border-radius:.75rem; padding:.6rem .8rem; color:#e5e7eb; outline:none }
+    .btn { display:inline-flex; align-items:center; justify-content:center; gap:.5rem; padding:.6rem .9rem; border-radius:.8rem; font-weight:800 }
+    .btn-primary { background:var(--brand); color:#111 }
+    .btn-secondary { background:#0f0f10; color:#e5e7eb; border:1px solid #3a3a40 }
+    .btn-info { background:#3b82f6; color:#fff }
+    .btn-success { background:#10b981; color:#0b0b0b }
+    
+    /* Tab-Stil: Übergang hinzugefügt */
+    .tab { border:1px solid #3a3a40; border-radius:.8rem; padding:.45rem .75rem; font-weight:700; transition: all 0.2s ease; }
+    .tab.active { background:rgba(245,158,11,.25); color:#fde68a; outline:1px solid rgba(245,158,11,.6) }
+    
+    /* Aktives Tab-Icon färben */
+    .tab.active i { color: var(--brand); }
+
+    .save-chip { opacity:0; transition:opacity .3s; font-size:.75rem; color:#9ca3af }
+    .pill { font-size:.7rem; padding:.15rem .45rem; border-radius:999px; border:1px solid #3a3a40; background:#0f0f10 }
+    .progress-wrap { width:100%; background:#1a1a1e; border:1px solid #2a2a31; border-radius:999px; height:.6rem; overflow:hidden }
+    .progress-bar { height:100%; width:0; background:var(--brand) }
+    .li-admin button { opacity:.7 }
+    .li-admin button:hover { opacity:1 }
+    @media print { .no-print { display:none!important } body { background:#fff; color:#000 } }
+
+    /* 📱 Tablet landscape layout tweaks */
+    @media (min-width: 1024px) and (orientation: landscape) {
+      main.dashboard-grid { display:grid; grid-template-columns: 1fr 1fr; gap:1rem }
+      #tab-dashboard, #tab-shifts, #tab-orders, #tab-history { grid-column: span 2 }
+      .dashboard-rows { display:grid; grid-template-columns: 1fr 1fr; gap:1rem }
+    }
+
+    /* subtle branding accents */
+    .btn-primary:hover { background:#fbbf24 }
+  </style>
 </head>
-<body class="antialiased text-stone-800">
+<body class="min-h-full">
 
-    <div class="container mx-auto max-w-5xl p-4 md:p-8">
+  <!-- Header -->
+  <header class="no-print sticky top-0 z-40 border-b border-neutral-800 bg-[#0e0e10]/95 backdrop-blur">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-3">
+      <!-- === HIER IST DIE ÄNDERUNG (LOGO) === -->
+      <div class="flex items-center gap-3 select-none">
+        <!-- NEUES LOGO -->
+        <img src="https://i.imgur.com/eGNSNJ9.png" alt="Logo" class="h-10" onerror="this.style.display='none'; document.getElementById('logo-fallback-text').style.display='block'">
+        <!-- Fallback-Text, falls Bild nicht lädt -->
+        <span id="logo-fallback-text" class="text-2xl font-extrabold text-amber-300" style="display:none;">macis</span> 
+        <span class="text-xs px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-200">Backverkauf</span>
+      </div>
+      <!-- === ENDE DER ÄNDERUNG === -->
 
-        <!-- Header and Date Navigation -->
-        <header class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 border-b border-stone-200 pb-4">
-            <div class="w-full sm:w-auto mb-4 sm:mb-0">
-                <!-- Logo: Versucht Online-Bild zu laden, mit Text-Fallback -->
-                <img src="https://macis-leipzig.de/wp-content/uploads/2019/03/Macis-Logo-Leipzig.png" 
-                     alt="Macis Logo" 
-                     class="h-12"
-                     onerror="this.style.display='none'; document.getElementById('logo-fallback').style.display='block'">
-                <!-- Fallback-Logo (Text), falls Bild nicht lädt (z.B. offline) -->
-                <div id="logo-fallback" style="display:none;">
-                    <h1 class="text-3xl text-amber-900">
-                        <span class="font-logo">macis</span>
-                        <span class="font-semibold text-2xl tracking-wider">LEIPZIG</span>
-                    </h1>
-                </div>
-                <h2 class="text-2xl font-semibold text-stone-700 mt-2">Bäckerei Übergabe</h2>
-            </div>
-            <div class="flex items-center space-x-2">
-                <button onclick="changeDay(-1)" class="p-2 rounded-lg bg-white shadow-sm hover:bg-stone-100 transition border border-stone-200">
-                    <i class="ph ph-caret-left text-xl text-amber-800"></i>
-                </button>
-                <span id="current-date" class="text-xl font-semibold text-amber-800 w-32 text-center"></span>
-                <button onclick="changeDay(1)" class="p-2 rounded-lg bg-white shadow-sm hover:bg-stone-100 transition border border-stone-200">
-                    <i class="ph ph-caret-right text-xl text-amber-800"></i>
-                </button>
-            </div>
-        </header>
-
-        <!-- Reiter-Navigation -->
-        <nav class="flex flex-col md:flex-row md:space-x-2 mb-8 bg-white p-2 rounded-lg shadow-sm border border-stone-200">
-            <button id="nav-btn-uebergabe" onclick="showPage('page-uebergabe', this)" class="nav-button active text-sm md:text-lg font-semibold px-2 md:px-4 py-3 text-stone-600 hover:text-amber-700 w-full md:flex-1 flex items-center justify-center gap-2">
-                <i class="ph ph-notebook text-xl"></i>
-                <span>Übergabe</span>
-            </button>
-            <button id="nav-btn-schichten" onclick="showPage('page-schichten', this)" class="nav-button text-sm md:text-lg font-semibold px-2 md:px-4 py-3 text-stone-600 hover:text-amber-700 w-full md:flex-1 flex items-center justify-center gap-2">
-                <i class="ph ph-sun-horizon text-xl"></i>
-                <span>Schichten</span>
-            </button>
-            <button id="nav-btn-bestellungen" onclick="showPage('page-bestellungen', this)" class="nav-button text-sm md:text-lg font-semibold px-2 md:px-4 py-3 text-stone-600 hover:text-amber-700 w-full md:flex-1 flex items-center justify-center gap-2">
-                <i class="ph ph-calendar-plus text-xl"></i>
-                <span>Bestellungen</span>
-            </button>
-            <button id="nav-btn-abschluss" onclick="showPage('page-abschluss', this)" class="nav-button text-sm md:text-lg font-semibold px-2 md:px-4 py-3 text-stone-600 hover:text-amber-700 w-full md:flex-1 flex items-center justify-center gap-2">
-                <i class="ph ph-bank text-xl"></i>
-                <span>Abschrieb</span> 
-            </button>
-            <!-- TGTG REITER ENTFERNT -->
-        </nav>
-
-        <!-- Main Content Grid -->
-        <main id="app-content">
-
-            <!-- === SEITE 1: Kommunikation === -->
-            <div id="page-uebergabe" class="page-content flex flex-col gap-6">
-                <!-- Card: Wichtige Infos (Persistent) -->
-                <div class="bg-white p-6 rounded-2xl shadow-lg flex flex-col border border-stone-200">
-                    <div class="flex justify-between items-center mb-4 border-b border-amber-200 pb-2">
-                        <h2 class="text-2xl font-semibold text-amber-800">
-                            <i class="ph ph-warning-circle inline-block mr-2 text-red-600 align-middle"></i>
-                            Wichtige Infos (Bleibt gespeichert)
-                        </h2>
-                        <span id="static-save-status" class="text-sm text-stone-500 transition-opacity opacity-0">Gespeichert!</span>
-                    </div>
-                    <textarea id="static-info-text" 
-                        oninput="debouncedUpdateStaticInfo()" 
-                        placeholder="Wichtige Infos für alle Schichten (Allergene, Preise, kaputte Geräte)..." 
-                        class="flex-grow w-full border border-stone-300 rounded-lg p-3 min-h-32 focus:outline-none focus:ring-2 focus:ring-amber-500"></textarea>
-                </div>
-
-                <!-- Card: Übergabe Notizen -->
-                <div class="bg-white p-6 rounded-2xl shadow-lg flex flex-col border border-stone-200">
-                    <div class="flex justify-between items-center mb-4 border-b border-amber-200 pb-2 gap-4">
-                        <h2 class="text-2xl font-semibold text-amber-800">
-                            <i class="ph ph-note-pencil inline-block mr-2 text-amber-600 align-middle"></i>
-                            Tägliche Übergabe Notizen
-                        </h2>
-                        <span id="save-status" class="text-sm text-stone-500 transition-opacity opacity-0">Gespeichert!</span>
-                    </div>
-                    <textarea id="uebergabe-notiz" 
-                        oninput="debouncedUpdateNotes()" 
-                        placeholder="Wichtige Infos für die nächste Schicht (Früh an Spät / Spät an Früh)..." 
-                        class="flex-grow w-full border border-stone-300 rounded-lg p-3 min-h-48 focus:outline-none focus:ring-2 focus:ring-amber-500"></textarea>
-                </div>
-            </div>
-            
-            <!-- === SEITE 2: Tägliche Aufgaben === -->
-            <div id="page-schichten" class="page-content hidden">
-                
-                <!-- Reset-Button -->
-                <div class="mb-4 flex justify-end">
-                    <button onclick="resetTasksForToday()" class="flex items-center gap-2 px-4 py-2 bg-white border border-red-300 text-red-600 rounded-lg shadow-sm hover:bg-red-50 transition">
-                        <i class="ph ph-arrow-clockwise text-lg"></i>
-                        Alle Aufgaben zurücksetzen
-                    </button>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <!-- Card: Frühschicht -->
-                    <div class="bg-white p-6 rounded-2xl shadow-lg flex flex-col border border-stone-200">
-                        <h2 class="text-2xl font-semibold text-amber-800 mb-4 border-b border-amber-200 pb-2">
-                            <i class="ph ph-sun inline-block mr-2 text-amber-600 align-middle"></i>
-                            Frühschicht Aufgaben
-                        </h2>
-                        <ul id="frueh-aufgaben-list" class="space-y-3 task-list overflow-y-auto max-h-96 pr-2">
-                            <!-- Static checklist items will be rendered here -->
-                        </ul>
-                    </div>
-
-                    <!-- Card: Spätschicht -->
-                    <div class="bg-white p-6 rounded-2xl shadow-lg flex flex-col border border-stone-200">
-                        <h2 class="text-2xl font-semibold text-amber-800 mb-4 border-b border-amber-200 pb-2">
-                            <i class="ph ph-moon inline-block mr-2 text-amber-600 align-middle"></i>
-                            Spätschicht Aufgaben
-                        </h2>
-                        <ul id="spaet-aufgaben-list" class="space-y-3 task-list overflow-y-auto max-h-96 pr-2">
-                            <!-- Static checklist items will be rendered here -->
-                        </ul>
-                    </div>
-
-                    <!-- Card: Sonntagsschicht (wird per JS ein-/ausgeblendet) -->
-                    <div id="sonntag-card" class="bg-white p-6 rounded-2xl shadow-lg flex flex-col hidden border border-stone-200">
-                        <h2 class="text-2xl font-semibold text-amber-800 mb-4 border-b border-amber-200 pb-2">
-                            <i class="ph ph-calendar-check inline-block mr-2 text-amber-600 align-middle"></i>
-                            Sonntagsschicht
-                        </h2>
-                        <ul id="sonntag-aufgaben-list" class="space-y-3 task-list overflow-y-auto max-h-96 pr-2">
-                            <!-- Static checklist items will be rendered here -->
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-            <!-- === SEITE 3: Outlook-Helfer === -->
-            <div id="page-bestellungen" class="page-content hidden">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    
-                    <!-- Card: Neue Bestellung in Outlook eintragen -->
-                    <div class="bg-white p-6 rounded-2xl shadow-lg flex flex-col border border-stone-200">
-                        <h2 class="text-2xl font-semibold text-amber-800 mb-4 border-b border-amber-200 pb-2">
-                            <i class="ph ph-plus-circle inline-block mr-2 text-amber-600 align-middle"></i>
-                            Neue Bestellung in Outlook eintragen
-                        </h2>
-                        <!-- FORMULAR -->
-                        <form id="outlook-form" class="space-y-4">
-                            <!-- Abholen (Datum & Zeit) -->
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label for="order-date" class="block text-sm font-medium text-stone-700 mb-1">Abhol-Datum</label>
-                                    <input type="date" id="order-date" required class="w-full border border-stone-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-amber-500">
-                                </div>
-                                <div>
-                                    <label for="order-time" class="block text-sm font-medium text-stone-700 mb-1">Abhol-Zeit</label>
-                                    <input type="time" id="order-time" required class="w-full border border-stone-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-amber-500">
-                                </div>
-                            </div>
-                            
-                            <!-- Name (Betreff) -->
-                            <div>
-                                <label for="order-customer" class="block text-sm font-medium text-stone-700 mb-1">Name (Betreff)</label>
-                                <input type="text" id="order-customer" placeholder="z.B. Herr Müller" required class="w-full border border-stone-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-amber-500">
-                            </div>
-
-                            <!-- Mitarbeiter & Telefon -->
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label for="order-mitarbeiter" class="block text-sm font-medium text-stone-700 mb-1">Mitarbeiter</label>
-                                    <input type="text" id="order-mitarbeiter" placeholder="Dein Name" required class="w-full border border-stone-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-amber-500">
-                                </div>
-                                <div>
-                                    <label for="order-telefon" class="block text-sm font-medium text-stone-700 mb-1">Telefonnummer</label>
-                                    <input type="tel" id="order-telefon" placeholder="Telefon des Kunden" class="w-full border border-stone-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-amber-500">
-                                </div>
-                            </div>
-
-                            <!-- Produkte (Details) -->
-                            <div>
-                                <label for="order-details" class="block text-sm font-medium text-stone-700 mb-1">Produkte</label>
-                                <textarea id="order-details" rows="4" placeholder="z.B. 2x Dinkelbrot, 1x Apfeltasche, 3x Croissants" required class="w-full border border-stone-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-amber-500"></textarea>
-                            </div>
-
-                            <!-- Checkboxen -->
-                            <div class="space-y-2">
-                                <div class="flex items-center">
-                                    <input type="checkbox" id="order-bezahlt" class="h-5 w-5 rounded border-stone-300 text-amber-700 focus:ring-amber-500">
-                                    <label for="order-bezahlt" class="ml-3 block text-md text-stone-700">Bereits bezahlt?</label>
-                                </div>
-                                <!-- Pâtisserie Checkbox -->
-                                <div class="flex items-center">
-                                    <input type="checkbox" id="order-patisserie" class="h-5 w-5 rounded border-stone-300 text-amber-700 focus:ring-amber-500">
-                                    <label for="order-patisserie" class="ml-3 block text-md text-stone-700">Auch an Pâtisserie senden?</label>
-                                </div>
-                            </div>
-
-                            <button type="submit" class="w-full bg-amber-700 text-white px-6 py-3 rounded-lg hover:bg-amber-800 transition shadow-md text-lg font-semibold flex items-center justify-center gap-2">
-                                <i class="ph ph-calendar-plus text-xl"></i>
-                                In Outlook eintragen
-                            </button>
-                        </form>
-                    </div>
-
-                    <!-- Card: Outlook Kalender öffnen -->
-                    <div class="bg-white p-6 rounded-2xl shadow-lg flex flex-col border border-stone-200">
-                        <h2 class="text-2xl font-semibold text-amber-800 mb-4 border-b border-amber-200 pb-2">
-                            <i class="ph ph-calendar inline-block mr-2 text-amber-600 align-middle"></i>
-                            Kalender ansehen
-                        </h2>
-                        <p class="text-stone-600 mb-4">
-                            Öffnet den Outlook-Kalender für den oben in der App **ausgewählten Tag**.
-                        </p>
-                        <!-- Dieser Link wird jetzt dynamisch per JS aktualisiert -->
-                        <a id="dynamic-outlook-link" 
-                           href="https://outlook.live.com/calendar/view/day" 
-                           target="_blank" 
-                           rel="noopener noreferrer"
-                           class="inline-block w-full text-center bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition shadow-md font-semibold">
-                            <i class="ph ph-calendar-blank mr-1 inline-block"></i>
-                            Kalender für gewählten Tag öffnen
-                        </a>
-                        <p class="text-xs text-stone-500 mt-4">
-                            (Stellen Sie sicher, dass Sie im Browser mit dem richtigen Macis-Konto bei Outlook angemeldet sind.)
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- === SEITE 4: Abschrieb === -->
-            <div id="page-abschluss" class="page-content hidden">
-                <div class="grid grid-cols-1 gap-6">
-                    <!-- Card: Tagesabschluss -->
-                    <div class="bg-white p-6 rounded-2xl shadow-lg flex flex-col border border-stone-200">
-                        
-                        <!-- EINHEITLICHES FORMULAR -->
-                        <div class="mb-6 border-b border-stone-200 pb-6">
-                            <h2 class="text-2xl font-semibold text-amber-800 mb-4">
-                                <i class="ph ph-plus-circle inline-block mr-2 text-amber-600 align-middle"></i>
-                                Neuen Eintrag hinzufügen
-                            </h2>
-
-                            <!-- Radio Buttons: Abschrieb / Retoure / TGTG -->
-                            <div class="flex flex-col sm:flex-row items-start sm:items-center sm:space-x-6 mb-4">
-                                <label class="flex items-center text-lg font-semibold mb-2 sm:mb-0">
-                                    <input type="radio" name="eintrag-typ" value="abschrieb" checked class="h-5 w-5 text-amber-700 focus:ring-amber-500">
-                                    <span class="ml-2">Abschrieb</span>
-                                </label>
-                                <label class="flex items-center text-lg font-semibold mb-2 sm:mb-0">
-                                    <input type="radio" name="eintrag-typ" value="retoure" class="h-5 w-5 text-amber-700 focus:ring-amber-500">
-                                    <span class="ml-2">Retoure</span>
-                                </label>
-                                <label class="flex items-center text-lg font-semibold mb-2 sm:mb-0">
-                                    <input type="radio" name="eintrag-typ" value="tgtg" class="h-5 w-5 text-amber-700 focus:ring-amber-500">
-                                    <span class="ml-2">TGTG</span>
-                                </label>
-                            </div>
-                            
-                            <!-- Produktauswahl -->
-                            <h4 class="text-md font-semibold text-stone-600 mb-2">Produktauswahl</h4>
-                            <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 mb-2">
-                                <select id="select-eintrag-kategorie" onchange="updateProduktDropdown()" class="flex-grow border border-stone-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-amber-500">
-                                    <option value="">-- Kategorie --</option>
-                                </select>
-                                <select id="select-eintrag-produkt" class="flex-grow border border-stone-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-amber-500">
-                                    <option value="">-- Produkt --</option>
-                                </select>
-                            </div>
-                            <div class="flex space-x-2 mb-2">
-                                <input type="number" id="input-eintrag-menge" placeholder="Menge" class="w-20 border border-stone-300 rounded-lg p-2 text-center focus:outline-none focus:ring-2 focus:ring-amber-500">
-                                <button onclick="addProduktItem()" title="Produkt hinzufügen" class="flex-grow bg-amber-700 text-white px-4 py-2 rounded-lg hover:bg-amber-800 transition shadow">
-                                    <i class="ph ph-plus text-lg"></i> Hinzufügen
-                                </button>
-                            </div>
-
-                            <!-- Manuelle Eingabe -->
-                            <h4 class="text-md font-semibold text-stone-600 mb-2 mt-4">Manuelle Eingabe</h4>
-                            <div class="flex space-x-2 mb-2">
-                                <input type="text" id="new-eintrag-input" placeholder="Andere Eingabe (z.B. 1L Milch)" class="flex-grow border border-stone-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500">
-                                <button onclick="addManualItem()" title="Einfach hinzufügen" class="bg-amber-700 text-white px-4 py-2 rounded-lg hover:bg-amber-800 transition shadow">
-                                    <i class="ph ph-plus text-lg"></i>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- LISTEN (Abschrieb, Retoure, TGTG) -->
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <!-- 1. Abschrieb -->
-                            <div class="mb-4">
-                                <h3 class="text-lg font-semibold text-stone-700 mb-2">Abschrieb</h3>
-                                <ul id="abschrieb-list-neu" class="space-y-2 task-list overflow-y-auto flex-grow min-h-20 max-h-96 pr-2 bg-stone-50 p-2 rounded-lg border border-stone-200"></ul>
-                            </div>
-
-                            <!-- 2. Retoure -->
-                            <div class="mb-4">
-                                <h3 class="text-lg font-semibold text-stone-700 mb-2">Retoure</h3>
-                                <ul id="retoure-list-neu" class="space-y-2 task-list overflow-y-auto flex-grow min-h-20 max-h-96 pr-2 bg-stone-50 p-2 rounded-lg border border-stone-200"></ul>
-                            </div>
-                            
-                            <!-- 3. TGTG -->
-                            <div class="mb-4">
-                                <h3 class="text-lg font-semibold text-stone-700 mb-2">TGTG</h3>
-                                <ul id="tgtg-list-neu" class="space-y-2 task-list overflow-y-auto flex-grow min-h-20 max-h-96 pr-2 bg-stone-50 p-2 rounded-lg border border-stone-200"></ul>
-                            </div>
-                        </div>
-                        
-                        <!-- Buttons (Druck & TGTG-Link) -->
-                        <div class="mt-auto pt-4 border-t border-stone-200 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <button onclick="printTagesabschluss()" class="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition shadow-md text-lg font-semibold flex items-center justify-center gap-2">
-                                <i class="ph ph-printer text-xl"></i>
-                                Abschrieb drucken
-                            </button>
-                            <a href="https://store.toogoodtogo.com/" 
-                               target="_blank" 
-                               rel="noopener noreferrer"
-                               class="inline-block w-full text-center bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition shadow-md text-lg font-semibold flex items-center justify-center gap-2">
-                                <i class="ph ph-arrow-square-out mr-1 inline-block"></i>
-                                TGTG-Website
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- TGTG SEITE (ENTFERNT) -->
-
-        </main>
+      <div id="cloudState" class="pill ms-2">🔄</div>
+      <div class="ms-auto flex items-center gap-2">
+        <button id="printBtn" class="btn btn-info"><i class="ph ph-printer"></i> Drucken</button>
+      </div>
     </div>
+  </header>
 
-    <!-- Bestätigungs-Modal (für Reset & Delete) -->
-    <div id="confirm-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden" onclick="hideModal()">
-        <!-- Backdrop -->
-        <div id="confirm-modal-backdrop" class="fixed inset-0 bg-black/30 backdrop-blur-sm opacity-0"></div>
+  <!-- Date + Tabs -->
+  <section class="no-print border-b border-neutral-800 bg-[#0e0e10]">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap gap-3 items-center">
+      <div class="flex items-center gap-2">
+        <button id="prevDay" class="tab" aria-label="Vorheriger Tag"><i class="ph ph-caret-left"></i></button>
+        <div id="current-date" class="text-xl font-bold tabular-nums text-amber-300">--.--.----</div>
+        <button id="nextDay" class="tab" aria-label="Nächster Tag"><i class="ph ph-caret-right"></i></button>
+        <!-- ENTFERNT: <span id="business-cutover" class="pill" title="Tageswechsel um 03:00">⏰ Tageswechsel 03:00</span> -->
+      </div>
+      <nav class="ms-auto">
+        <ul class="flex flex-wrap gap-1.5" role="tablist">
+          <li><button class="tab active" data-tab="dashboard"><i class="ph ph-layout"></i> Dashboard</button></li>
+          <li><button class="tab" data-tab="shifts"><i class="ph ph-sun-horizon"></i> Schichten</button></li>
+          <li><button class="tab" data-tab="orders"><i class="ph ph-calendar-plus"></i> Bestellungen</button></li>
+          <li><button class="tab" data-tab="history"><i class="ph ph-calendar"></i> Verlauf</button></li>
+          <li><button class="tab" data-tab="settings"><i class="ph ph-gear-six"></i> Einstellungen</button></li>
+        </ul>
+      </nav>
+    </div>
+  </section>
+
+  <!-- MAIN -->
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 py-6 dashboard-grid">
+
+    <!-- DASHBOARD -->
+    <section id="tab-dashboard" class="tab-panel grid gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="card"><div class="text-sm text-slate-400">Offene Aufgaben heute</div><div id="stat-open" class="text-3xl font-extrabold">0</div></div>
+        <div class="card"><div class="text-sm text-slate-400">Übergabe geschrieben</div><div id="stat-note" class="text-3xl font-extrabold">–</div></div>
         
-        <!-- Modal Content -->
-        <div id="confirm-modal-content" class="bg-white w-full max-w-md p-6 rounded-2xl shadow-2xl z-10 opacity-0" onclick="event.stopPropagation()">
-            <h3 id="modal-title" class="text-xl font-semibold text-stone-800 mb-2">Aktion bestätigen</h3>
-            <p id="modal-message" class="text-stone-600 mb-6">Möchten Sie diese Aktion wirklich durchführen?</p>
-            <div class="flex justify-end gap-3">
-                <button id="modal-cancel-btn" onclick="hideModal()" class="px-5 py-2 rounded-lg bg-stone-100 text-stone-700 hover:bg-stone-200 transition">
-                    Abbrechen
-                </button>
-                <button id="modal-confirm-btn" onclick="confirmAction()" class="px-5 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition">
-                    Bestätigen
-                </button>
-            </div>
+        <div class="card">
+            <div class="text-sm text-slate-400">Kalender</div>
+            <a id="dash-outlook" target="_blank" rel="noopener" class="inline-flex mt-2 btn btn-primary">
+                <i class="ph ph-calendar-check"></i> BESTELLUNGEN VON HEUTE
+            </a>
         </div>
-    </div>
-    <!-- ENDE Modal -->
-
-    <!-- Lokales Speicher-Skript -->
-    <script>
-        // --- GLOBAL VARIABLES ---
-        let currentData = {};
-        let staticInfoData = {};
-        let currentDate = new Date();
         
-        let dailySaveTimer, staticSaveTimer;
-        let dailyStatusTimer, staticStatusTimer;
-        let confirmCallback = null; // Für das Modal
+        <div class="card"><div class="text-sm text-slate-400">Quick</div><div class="mt-2 flex flex-wrap gap-2"><a class="btn btn-success" href="https://store.toogoodtogo.com/" target="_blank" rel="noopener">TGTG</a><button class="btn btn-secondary" id="qa-new-order">Neue Bestellung</button><button class="btn btn-secondary" id="qa-reset">Aufgaben resetten</button></div></div>
+      </div>
 
-        const STATIC_INFO_KEY = 'bäckerei-static-info';
+      <div class="dashboard-rows">
+        <!-- Highlight-Karte -->
+        <article class="card card-highlight">
+          <header class="flex items-center justify-between border-b border-amber-500/30 pb-2"><h2 class="font-bold text-amber-200 flex items-center gap-2"><i class="ph ph-warning-circle"></i> Wichtige Infos (persistent)</h2><span id="dash-static-save" class="save-chip">Gespeichert</span></header>
+          <textarea id="dash-static-info" class="textarea h-32" placeholder="Allergene, Geräte, Preisänderungen…"></textarea>
+        </article>
+        <article class="card">
+          <header class="flex items-center justify-between border-b border-amber-500/30 pb-2"><h2 class="font-bold text-amber-200 flex items-center gap-2"><i class="ph ph-note-pencil"></i> Tägliche Übergabe</h2><span id="dash-note-save" class="save-chip">Gespeichert</span></header>
+          <textarea id="dash-uebergabe" class="textarea h-32" placeholder="Infos an nächste Schicht…"></textarea>
+          <p class="mt-2 text-xs text-slate-400">Tipp: <span class="border px-1 rounded">Ctrl</span>+<span class="border px-1 rounded">Enter</span> speichert sofort.</p>
+        </article>
+        <!-- Überschriften gefärbt -->
+        <article class="card"><h2 class="font-bold mb-2 text-amber-200">TGTG</h2><textarea id="quick-tgtg" class="textarea h-40" placeholder="TGTG-Notizen…"></textarea></article>
+        <article class="card"><h2 class="font-bold mb-2 text-amber-200">Abschrieb</h2><textarea id="quick-abs" class="textarea h-40" placeholder="Abschrieb-Notizen…"></textarea></article>
+      </div>
+    </section>
 
-        // NEU: Produkt-Datenbank
-        const PRODUKT_KATEGORIEN = {
-            "Brot": ["Dinkelbrot", "Roggenbrot", "Sauerteigbrot", "Weizenmischbrot", "Baguette", "Fougasse", "Sonstiges Brot"],
-            "Brötchen": ["Brötchen (normal)", "Körnerbrötchen", "Laugengebäck"],
-            "Süßes": ["Croissant", "Franzbrötchen", "Süßes Stück", "Kuchen", "Kekse", "Granola"],
-            "Sandwich": ["Sandwich (Salami)", "Sandwich (Käse)", "Sandwich (Vegan)"]
-        };
+    <!-- SCHICHTEN -->
+    <section id="tab-shifts" class="tab-panel hidden grid gap-6">
+      <div class="flex flex-wrap gap-3 justify-between items-center">
+        <div class="flex items-center gap-4">
+          <label class="text-sm flex items-center gap-2"><input id="onlyOpen" type="checkbox" class="align-[-2px]" checked> Nur offene</label>
+          <label class="text-sm flex items-center gap-2"><input id="adminToggle" type="checkbox" class="align-[-2px]"> Admin-Modus</label>
+        </div>
+        <div class="flex gap-2">
+          <button id="resetTasks" class="btn btn-secondary">Alle Aufgaben zurücksetzen</button>
+          <button id="addTaskBtn" class="btn btn-primary">+ Aufgabe hinzufügen</button>
+        </div>
+      </div>
 
+      <div class="grid md:grid-cols-3 gap-6">
+        <article class="card">
+          <h3 class="font-bold mb-2 flex items-center gap-2">🟢 Früh <span class="pill">morning</span></h3>
+          <div class="progress-wrap mb-2"><div id="prog-morning" class="progress-bar"></div></div>
+          <ul id="ul-morning" class="space-y-2"></ul>
+        </article>
+        <article class="card">
+          <h3 class="font-bold mb-2 flex items-center gap-2">🟡 Spät <span class="pill">evening</span></h3>
+          <div class="progress-wrap mb-2"><div id="prog-evening" class="progress-bar"></div></div>
+          <ul id="ul-evening" class="space-y-2"></ul>
+        </article>
+        <article id="sunday-card" class="card hidden">
+          <h3 class="font-bold mb-2 flex items-center gap-2">🟣 Sonntag <span class="pill">sunday</span></h3>
+          <div class="progress-wrap mb-2"><div id="prog-sunday" class="progress-bar"></div></div>
+          <ul id="ul-sunday" class="space-y-2"></ul>
+        </article>
+      </div>
+    </section>
 
-        // --- DEFAULT DATA ---
-        function getNewDayData(date) {
-            let data = {
-                frühAufgaben: [
-                    { text: "Produktionsliste (Sandwiches)", done: false },
-                    { text: "Backwaren einräumen", done: false },
-                    { text: "Temperaturliste", done: false },
-                    { text: "Kühlschranklicht anschalten, ggf. aufräumen & auffüllen", done: false },
-                    { text: "Freisitz aufschließen & Oberflächen abwischen + Töpfe raus", done: false },
-                    { text: "Kaffeebereich vorbereiten (Maschine, Bohnen, Milch, Ecke)", done:false },
-                    { text: "MHD Regal & Kühlschrank checken (Eier ab 1 Woche vor Ablauf kühlen)", done: false },
-                    { text: "Schild & Mülleimer rausstellen", done: false },
-                    { text: "Bestellungen packen & beschriften", done: false },
-                    { text: "Safebag (x4) für Belege holen", done: false },
-                    { text: "Bestellung Mio packen (Restaurant)", done: false },
-                    { text: "Fougasse schneiden", done: false },
-                    { text: "Ringe einweichen & spülen", done: false },
-                    { text: "Backwaren nachbestellen", done: false },
-                    { text: "Übergabe mit allen wichtigen Infos für Spätschicht", done: false }
-                ],
-                spätAufgaben: [
-                    { text: "Backwaren nachbestellen!", done: false },
-                    { text: "Bleche & Besteck spülen inkl. Spülmaschine reinigen", done: false },
-                    { text: "Körbe saubermachen & neu einlegen", done: false },
-                    { text: "Auslagen, Scheiben & Kühlschränke saubermachen", done: false },
-                    { text: "Schild & Müll reinholen + Freisitz abschließen", done: false },
-                    { text: "Kaffeemaschine reinigen & Bohnen auffüllen", done: false },
-                    { text: "Brotschneidemaschine saubermachen", done: false },
-                    { text: "Kehren inkl. Vorziehen & hinter Brotschneidemaschine", done: false },
-                    { text: "Reinigungsliste abhaken", done: false },
-                    { text: "Foodsharing (nach Abschrieb!)", done: false },
-                    { text: "Müll & Flaschen runterbringen", done: false },
-                    { text: "Kassenabrechnung + Safebag in Tresor!", done: false },
-                    { text: "Auffüllen: Verpackungen, Becher, Handschuhe, Kaffeeecke, Reinigungsmaterial etc.", done: false },
-                    { text: "alle Oberflächen abwischen (auch bei Kaffeeecke)", done: false }
-                ],
-                sonntagAufgaben: [
-                    { text: "Townhouse ausliefern (+ Unterschriften für ganze Woche holen!)", done: false },
-                    { text: "TGTG Tüten erst am Montag buchen (trotzdem extra Abschrieb)", done: false }
-                ],
-                abschrieb: [], 
-                retoure: [], 
-                tgtg: [],
-                übergabeNotiz: ""
-            };
-            
-            if (date.getDay() === 4) { // Donnerstag
-                data.frühAufgaben.push({ text: "Donnerstags: Kekse & Granola einpacken falls leer", done: false });
-            }
-            return data;
-        }
+    <!-- ORDERS -->
+    <section id="tab-orders" class="tab-panel hidden grid gap-6">
+      <article class="card">
+        <h2 class="font-bold text-amber-200 mb-3 flex items-center gap-2"><i class="ph ph-calendar-plus"></i> Outlook-Bestellung</h2>
+        <form id="order-form" class="grid gap-4" novalidate>
+          <div class="grid sm:grid-cols-2 gap-4">
+            <div>
+              <label class="text-sm" for="order-date">Datum</label>
+              <input id="order-date" type="date" class="input" required>
+              <p class="text-xs text-slate-400 mt-1">Synchronisiert sich automatisch mit dem globalen Datum.</p>
+            </div>
+            <div>
+              <label class="text-sm" for="order-time">Zeit</label>
+              <input id="order-time" type="time" class="input" required>
+            </div>
+          </div>
+          <div>
+            <label class="text-sm" for="order-customer">Name (Betreff)</label>
+            <input id="order-customer" class="input" placeholder="z. B. Herr Müller" required>
+          </div>
+          <div class="grid sm:grid-cols-2 gap-4">
+            <div><label class="text-sm" for="order-emp">Mitarbeiter</label><input id="order-emp" class="input" placeholder="Dein Name" required></div>
+            <div><label class="text-sm" for="order-phone">Telefon</label><input id="order-phone" class="input" inputmode="tel" placeholder="Kunden-Telefon"></div>
+          </div>
+          <div>
+            <label class="text-sm" for="order-items">Produkte</label>
+            <textarea id="order-items" rows="4" class="textarea" placeholder="2× Dinkelbrot, 1× Apfeltasche…" required></textarea>
+          </div>
+          <div class="grid sm:grid-cols-2 gap-4">
+            <label class="text-sm flex items-center gap-2"><input id="order-paid" type="checkbox"> Bereits bezahlt?</label>
+            <label class="text-sm flex items-center gap-2"><input id="order-patisserie" type="checkbox"> An Pâtisserie senden?</label>
+          </div>
+          <div class="grid sm:grid-cols-2 gap-3">
+            <button class="btn btn-primary" type="submit">In Outlook eintragen</button>
+            <a id="outlook-day-link" target="_blank" rel="noopener" class="btn btn-secondary">Kalender für gewählten Tag öffnen</a>
+          </div>
+        </form>
+      </article>
 
-        // --- PAGE NAVIGATION ---
-        window.showPage = function(pageId, clickedButton) {
-            document.querySelectorAll('.page-content').forEach(page => {
-                page.classList.add('hidden');
-            });
-            document.querySelectorAll('.nav-button').forEach(button => {
-                button.classList.remove('active');
-            });
-            const targetPage = document.getElementById(pageId);
-            if (targetPage) {
-                targetPage.classList.remove('hidden');
-            }
-            if (clickedButton) {
-                clickedButton.classList.add('active');
-            }
-        }
-        
-        // --- MODAL FUNCTIONS ---
-        function showModal(title, message, callback, confirmButtonText = 'Bestätigen', confirmButtonClass = 'bg-red-600 hover:bg-red-700') {
-            document.getElementById('modal-title').textContent = title;
-            document.getElementById('modal-message').textContent = message;
-            
-            const confirmBtn = document.getElementById('modal-confirm-btn');
-            confirmBtn.textContent = confirmButtonText;
-            confirmBtn.className = `px-5 py-2 rounded-lg text-white transition ${confirmButtonClass}`;
-            
-            confirmCallback = callback;
-            document.getElementById('confirm-modal').classList.remove('hidden');
-            setTimeout(() => document.getElementById('confirm-modal').classList.add('show'), 10);
-        }
+      <article class="card">
+        <h2 class="font-bold text-amber-200 mb-2 flex items-center gap-2"><i class="ph ph-eye"></i> Vorschau E-Mail-Body</h2>
+        <div id="emailPreview" class="rounded-xl border border-neutral-700 bg-[#0e0e10] p-4 overflow-auto" style="max-height: 280px"></div>
+        <div class="mt-2 flex gap-2">
+          <button id="copyHtml" class="btn btn-secondary">HTML kopieren</button>
+          <button id="copyText" class="btn btn-secondary">Als Text kopieren</button>
+        </div>
+      </article>
+    </section>
 
-        function hideModal() {
-            const modal = document.getElementById('confirm-modal');
-            modal.classList.remove('show');
-            setTimeout(() => modal.classList.add('hidden'), 200);
-            confirmCallback = null;
-        }
+    <!-- HISTORY -->
+    <section id="tab-history" class="tab-panel hidden grid gap-6">
+      <article class="card">
+        <h2 class="font-bold text-amber-200 mb-3 flex items-center gap-2"><i class="ph ph-calendar"></i> Archivierte Übergaben</h2>
+        <ul id="archive-list" class="space-y-3"></ul>
+      </article>
+    </section>
 
-        function confirmAction() {
-            if (typeof confirmCallback === 'function') {
-                confirmCallback();
-            }
-            hideModal();
-        }
+    <!-- SETTINGS -->
+    <section id="tab-settings" class="tab-panel hidden grid gap-6">
+      <article class="card">
+        <h2 class="font-bold text-amber-200 mb-3 flex items-center gap-2"><i class="ph ph-gear-six"></i> Einstellungen</h2>
+        <div class="grid md:grid-cols-2 gap-4">
+          <div>
+            <label class="text-sm" for="cfg-recip">Standard-Empfänger (Komma getrennt)</label>
+            <input id="cfg-recip" class="input" placeholder="baeckerei@..., backverkauf@...">
+          </div>
+          <div>
+            <label class="text-sm" for="cfg-pat">Pâtisserie-Empfänger</label>
+            <input id="cfg-pat" class="input" placeholder="patisserie@...">
+          </div>
+        </div>
+      </article>
+    </section>
 
-        // --- UI & DATE HELPERS ---
-        function getDateString(date) {
-            return date.toISOString().split('T')[0];
-        }
-        
-        // Helfer für Outlook-Datumsformat (YYYYMMDDTHHMMSS)
-        function getOutlookDateTime(date, time) {
-            const combinedISO = `${date}T${time}:00`;
-            const d = new Date(combinedISO);
-            
-            // Konvertiere zu UTC für den Link
-            const year = d.getUTCFullYear();
-            const month = (d.getUTCMonth() + 1).toString().padStart(2, '0');
-            const day = d.getUTCDate().toString().padStart(2, '0');
-            const hours = d.getUTCHours().toString().padStart(2, '0');
-            const minutes = d.getUTCMinutes().toString().padStart(2, '0');
-            
-            return `${year}${month}${day}T${hours}${minutes}00Z`;
-        }
+  </main>
 
-        // Helfer, um Endzeit zu berechnen (z.B. +30 Min)
-        function getOutlookEndDateTime(date, time) {
-            const combinedISO = `${date}T${time}:00`;
-            const d = new Date(combinedISO);
-            
-            d.setMinutes(d.getMinutes() + 30);
-            
-            // Konvertiere zu UTC
-            const year = d.getUTCFullYear();
-            const month = (d.getUTCMonth() + 1).toString().padStart(2, '0');
-            const day = d.getUTCDate().toString().padStart(2, '0');
-            const hours = d.getUTCHours().toString().padStart(2, '0');
-            const minutes = d.getUTCMinutes().toString().padStart(2, '0');
-            
-            return `${year}${month}${day}T${hours}${minutes}00Z`;
-        }
-
-        // Aktualisiert den dynamischen "Kalender öffnen"-Link
-        function updateOutlookViewLink() {
-            const dateString = getDateString(currentDate); // YYYY-MM-DD
-            const linkEl = document.getElementById('dynamic-outlook-link');
-            if (linkEl) {
-                // Link zur Outlook-Tagesansicht für das ausgewählte Datum
-                linkEl.href = `https://outlook.live.com/calendar/view/day?startdt=${dateString}`;
-            }
-        }
-
-
-        function displayCurrentDate() {
-            document.getElementById('current-date').textContent = currentDate.toLocaleDateString('de-DE', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric'
-            });
-
-            const sonntagCard = document.getElementById('sonntag-card');
-            if (currentDate.getDay() === 0) { // 0 = Sonntag
-                sonntagCard.classList.remove('hidden');
-            } else {
-                sonntagCard.classList.add('hidden');
-            }
-
-            // Den Outlook-Link jedes Mal aktualisieren, wenn sich das Datum ändert
-            updateOutlookViewLink();
-        }
-
-        window.changeDay = function(offset) {
-            currentDate.setDate(currentDate.getDate() + offset);
-            displayCurrentDate(); // Diese Funktion ruft jetzt updateOutlookViewLink() auf
-            loadDataForDate(currentDate);
-        }
-
-        function showSaveStatus(type) {
-            const [statusEl, timer] = (type === 'static') 
-                ? [document.getElementById('static-save-status'), staticStatusTimer]
-                : [document.getElementById('save-status'), dailyStatusTimer];
-
-            statusEl.style.opacity = '1';
-            
-            if (timer) clearTimeout(timer);
-            const newTimer = setTimeout(() => {
-                statusEl.style.opacity = '0';
-            }, 2000);
-
-            if (type === 'static') {
-                staticStatusTimer = newTimer;
-            } else {
-                dailyStatusTimer = newTimer;
-            }
-        }
-
-        // --- RENDER FUNCTIONS ---
-        function renderChecklist(elementId, items, fieldName) {
-            const listEl = document.getElementById(elementId);
-            listEl.innerHTML = '';
-            if (!items || items.length === 0) {
-                listEl.innerHTML = `<li class="text-stone-500 italic">Keine Aufgaben.</li>`;
-                return;
-            }
-            items.forEach((item, index) => {
-                const li = document.createElement('li');
-                li.className = 'flex items-center';
-                const checkboxId = `${fieldName}-${index}-${Date.now()}`;
-                li.innerHTML = `
-                    <input type="checkbox" id="${checkboxId}" class="h-5 w-5 rounded border-stone-300 text-amber-700 focus:ring-amber-500" ${item.done ? 'checked' : ''}>
-                    <label for="${checkboxId}" class="ml-3 block text-md text-stone-700">${item.text}</label>
-                `;
-                li.querySelector('input').addEventListener('change', (e) => {
-                    updateChecklistItem(fieldName, index, e.target.checked);
-                });
-                listEl.appendChild(li);
-            });
-        }
-
-        function renderStringList(elementId, items, fieldName) {
-            const listEl = document.getElementById(elementId);
-            listEl.innerHTML = '';
-            if (!items || items.length === 0) {
-                listEl.innerHTML = `<li class="text-stone-500 italic px-3 py-2">Keine Einträge.</li>`;
-                return;
-            }
-            items.forEach((item, index) => {
-                const li = document.createElement('li');
-                li.className = 'flex items-center justify-between group bg-white px-3 py-2 rounded-lg';
-                li.innerHTML = `
-                    <span class="text-stone-700 break-all">${item}</span>
-                    <button class="text-stone-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition ml-2">
-                        <i class="ph ph-trash text-lg"></i>
-                    </button>
-                `;
-                li.querySelector('button').addEventListener('click', () => {
-                    deleteDynamicItem(fieldName, index);
-                });
-                listEl.appendChild(li);
-            });
-        }
-
-        function renderDailyData(data) {
-            renderChecklist('frueh-aufgaben-list', data.frühAufgaben, 'frühAufgaben');
-            renderChecklist('spaet-aufgaben-list', data.spätAufgaben, 'spätAufgaben');
-            renderChecklist('sonntag-aufgaben-list', data.sonntagAufgaben, 'sonntagAufgaben');
-            renderStringList('abschrieb-list-neu', data.abschrieb, 'abschrieb'); 
-            renderStringList('retoure-list-neu', data.retoure, 'retoure'); 
-            renderStringList('tgtg-list-neu', data.tgtg, 'tgtg');
-            
-            const notizEl = document.getElementById('uebergabe-notiz');
-            notizEl.value = data.übergabeNotiz;
-        }
-
-        function renderStaticInfo(data) {
-            const staticEl = document.getElementById('static-info-text');
-            staticEl.value = data.text || "";
-        }
-
-        // --- LOCALSTORAGE DATA FUNCTIONS (Daily & Static) ---
-        function saveCurrentDailyData() {
-            const dateString = getDateString(currentDate);
-            localStorage.setItem(dateString, JSON.stringify(currentData));
-            showSaveStatus('daily');
-        }
-
-        function saveCurrentStaticData() {
-            localStorage.setItem(STATIC_INFO_KEY, JSON.stringify(staticInfoData));
-            showSaveStatus('static');
-        }
-
-        function loadDataForDate(date) {
-            const dateString = getDateString(date);
-            let data = localStorage.getItem(dateString);
-            
-            if (data) {
-                currentData = JSON.parse(data);
-                // Konvertiere alte Datenstruktur falls nötig
-                if (currentData.abschreibungen) {
-                    currentData.abschrieb = currentData.abschreibungen;
-                    delete currentData.abschreibungen;
-                }
-                if (currentData.retouren) {
-                    currentData.retoure = currentData.retouren;
-                    delete currentData.retouren;
-                }
-
-                if (!currentData.frühAufgaben) {
-                    const freshData = getNewDayData(date);
-                    currentData = {...freshData, ...currentData};
-                }
-            } else {
-                console.log(`No local data for ${dateString}, creating...`);
-                currentData = getNewDayData(date);
-                saveCurrentDailyData();
-            }
-            renderDailyData(currentData);
-        }
-
-        function loadStaticInfo() {
-            let data = localStorage.getItem(STATIC_INFO_KEY);
-            if (data) {
-                staticInfoData = JSON.parse(data);
-            } else {
-                staticInfoData = { text: "Hier wichtige Infos eintragen (z.B. Allergene, Aktionen...)" };
-                saveCurrentStaticData();
-            }
-            renderStaticInfo(staticInfoData);
-        }
-
-        function updateChecklistItem(fieldName, index, isDone) {
-            if (currentData && currentData[fieldName] && currentData[fieldName][index] != null) {
-                currentData[fieldName][index].done = isDone;
-                saveCurrentDailyData();
-            }
-        }
-
-        // --- ZENTRALE SPEICHERFUNKTION FÜR ABSCHRIEB/RETOURE/TGTG ---
-        function saveAndRenderItem(fieldName, newText) {
-            if (!currentData[fieldName]) {
-                currentData[fieldName] = [];
-            }
-            currentData[fieldName].push(newText);
-            saveCurrentDailyData();
-
-            if (fieldName === 'abschrieb') {
-                renderStringList('abschrieb-list-neu', currentData.abschrieb, 'abschrieb');
-            } else if (fieldName === 'retoure') {
-                renderStringList('retoure-list-neu', currentData.retoure, 'retoure');
-            } else if (fieldName === 'tgtg') { 
-                renderStringList('tgtg-list-neu', currentData.tgtg, 'tgtg');
-            }
-        }
-
-        // --- FUNKTION für Produktauswahl (Abschrieb/Retoure/TGTG) ---
-        window.addProduktItem = function() {
-            const typ = document.querySelector('input[name="eintrag-typ"]:checked').value; // 'abschrieb', 'retoure' oder 'tgtg'
-            const produktSelectEl = document.getElementById('select-eintrag-produkt');
-            const mengeInputEl = document.getElementById('input-eintrag-menge');
-            
-            const product = produktSelectEl.value;
-            const menge = mengeInputEl.value.trim();
-
-            if (!product) {
-                alert("Bitte ein Produkt auswählen.");
-                return;
-            }
-            if (!menge || parseInt(menge) <= 0) {
-                alert("Bitte eine gültige Menge eingeben.");
-                return;
-            }
-
-            const newText = `${menge}x ${product}`; // Format: "5x Dinkelbrot"
-            saveAndRenderItem(typ, newText);
-
-            mengeInputEl.value = ""; // Nur Menge zurücksetzen
-        }
-
-        // --- FUNKTION für manuelle Eingabe (Abschrieb/Retoure/TGTG) ---
-        window.addManualItem = function() {
-            const typ = document.querySelector('input[name="eintrag-typ"]:checked').value; // 'abschrieb', 'retoure' oder 'tgtg'
-            const inputEl = document.getElementById('new-eintrag-input');
-            const newText = inputEl.value.trim();
-            if (!newText) return;
-
-            saveAndRenderItem(typ, newText);
-            inputEl.value = '';
-        }
-        
-        // --- addDynamicItem & TGTG-Funktionen ENTFERNT, da sie durch
-        // addProduktItem und addManualItem ersetzt wurden ---
-
-
-        window.deleteDynamicItem = function(fieldName, index) {
-            if (currentData && currentData[fieldName]) {
-                currentData[fieldName].splice(index, 1);
-                saveCurrentDailyData();
-                
-                if (fieldName === 'abschrieb') { 
-                    renderStringList('abschrieb-list-neu', currentData.abschrieb, 'abschrieb'); 
-                } else if (fieldName === 'retoure') { 
-                    renderStringList('retoure-list-neu', currentData.retoure, 'retoure'); 
-                } else if (fieldName === 'tgtg') {
-                    renderStringList('tgtg-list-neu', currentData.tgtg, 'tgtg');
-                }
-            }
-        }
-        
-        // --- PRINT FUNCTION ---
-        window.printTagesabschluss = function() {
-            const abs = currentData.abschrieb || []; 
-            const ret = currentData.retoure || []; 
-            const tgtg = currentData.tgtg || []; // WIEDER HINZUGEFÜGT
-            const date = currentDate.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
-
-            let content = `
-                <html>
-                <head>
-                    <title>Abschrieb ${date}</title> 
-                    <style>
-                        body { font-family: sans-serif; line-height: 1.5; padding: 20px; }
-                        h1 { color: #111; text-align: center; }
-                        h2 { color: #333; border-bottom: 2px solid #eee; padding-bottom: 5px; margin-top: 20px; }
-                        ul { list-style-type: none; padding-left: 0; }
-                        li { background-color: #f9f9f9; border: 1px solid #eee; padding: 8px 12px; margin-bottom: 5px; border-radius: 4px; }
-                        .no-items { color: #777; font-style: italic; background: none; border: none; padding: 0; }
-                        
-                        .container {
-                            display: flex;
-                            gap: 20px; 
-                            align-items: flex-start; 
-                        }
-                        .column {
-                            flex: 1; 
-                            min-width: 0; 
-                        }
-                    </style>
-                </head>
-                <body>
-                    <h1>Abschrieb für ${date}</h1> 
-                    
-                    <div class="container">
-                        <div class="column">
-                            <h2>Abschrieb</h2> 
-                            <ul>${abs.length ? abs.map(item => `<li>${item}</li>`).join('') : '<li class="no-items">Keine Einträge</li>'}</ul>
-                        </div>
-                        
-                        <div class="column">
-                            <h2>Retoure</h2> 
-                            <ul>${ret.length ? ret.map(item => `<li>${item}</li>`).join('') : '<li class="no-items">Keine Einträge</li>'}</ul>
-                        </div>
-
-                        <!-- TGTG-SPALTE WIEDER HINZUGEFÜGT -->
-                        <div class="column">
-                            <h2>TGTG</h2>
-                            <ul>${tgtg.length ? tgtg.map(item => `<li>${item}</li>`).join('') : '<li class="no-items">Keine Einträge</li>'}</ul>
-                        </div>
-                    </div>
-                </body>
-                </html>
-            `;
-
-            const printWindow = window.open('', '_blank');
-            printWindow.document.open();
-            printWindow.document.write(content);
-            printWindow.document.close();
-            
-            setTimeout(() => {
-                printWindow.focus();
-                printWindow.print();
-            }, 250);
-        }
-        
-        // --- RESET FUNCTION ---
-        window.resetTasksForToday = function() {
-            showModal(
-                'Aufgaben zurücksetzen',
-                'Möchten Sie wirklich alle Häkchen für die Früh-, Spät- und Sonntagsschicht für den ' + currentDate.toLocaleDateString('de-DE') + ' entfernen? Notizen und Tagesabschluss bleiben erhalten.',
-                () => {
-                    console.log('Resetting tasks for ' + getDateString(currentDate));
-                    const freshData = getNewDayData(currentDate);
-                    
-                    currentData.frühAufgaben = freshData.frühAufgaben;
-                    currentData.spätAufgaben = freshData.spätAufgaben;
-                    currentData.sonntagAufgaben = freshData.sonntagAufgaben;
-                    
-                    saveCurrentDailyData();
-                    renderDailyData(currentData);
-                },
-                'Ja, zurücksetzen',
-                'bg-red-600 hover:bg-red-700'
-            );
-        }
-
-        // --- DEBOUNCED SAVE FUNCTIONS ---
-        function updateNotes() {
-            currentData.übergabeNotiz = document.getElementById('uebergabe-notiz').value;
-            saveCurrentDailyData();
-        }
-
-        window.debouncedUpdateNotes = function() {
-            clearTimeout(dailySaveTimer);
-            dailySaveTimer = setTimeout(updateNotes, 500);
-        }
-
-        function updateStaticInfo() {
-            staticInfoData.text = document.getElementById('static-info-text').value;
-            saveCurrentStaticData();
-        }
-
-        window.debouncedUpdateStaticInfo = function() {
-            clearTimeout(staticSaveTimer);
-            staticSaveTimer = setTimeout(updateStaticInfo, 500);
-        }
-
-        // --- OUTLOOK-HELFER FUNKTION ---
-        function handleOutlookSubmit(event) {
-            event.preventDefault();
-            
-            // Werte aus dem Formular holen
-            const date = document.getElementById('order-date').value;
-            const time = document.getElementById('order-time').value;
-            const customer = document.getElementById('order-customer').value;
-            const detailsRaw = document.getElementById('order-details').value;
-            const mitarbeiter = document.getElementById('order-mitarbeiter').value;
-            const telefon = document.getElementById('order-telefon').value;
-            const bezahlt = document.getElementById('order-bezahlt').checked ? 'Ja' : 'Nein';
-            const includePatisserie = document.getElementById('order-patisserie').checked;
-            
-            if (!date || !time || !customer || !detailsRaw || !mitarbeiter) {
-                alert("Bitte füllen Sie alle Felder aus (Telefon ist optional).");
-                return;
-            }
-
-            // E-Mail-Adressen (anpassen falls nötig)
-            let recipientList = ["baeckerei@macis-leipzig.de", "backverkauf@macis-leipzig.de"];
-            if (includePatisserie) {
-                recipientList.push("patisserie@macis-leipzig.de");
-            }
-            const recipients = recipientList.join(','); 
-            
-            // Formatieren der Zeiten für den Link
-            const startTime = getOutlookDateTime(date, time);
-            const endTime = getOutlookEndDateTime(date, time); // 30 Minuten später
-
-            // Produkte formatieren (trennt bei Komma ODER Zeilenumbruch)
-            const productList = detailsRaw
-                .split(/[\n,]+/) // Trennt bei Zeilenumbruch ODER Komma
-                .map(item => item.trim()) // Entfernt Leerzeichen
-                .filter(item => item.length > 0) // Entfernt leere Zeilen
-                .map(item => `• ${item}`) // Fügt Bullet-Point hinzu
-                .join('<br>'); // Benutze <br>
-
-            // Body-Template erstellen
-            const abholZeitString = `${new Date(date + 'T' + time).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })} um ${time} Uhr`;
-            
-            // Baue den Body direkt mit <br> auf
-            const body = `Name: ${customer}<br>Mitarbeiter: ${mitarbeiter}<br>Telefonnummer: ${telefon || 'Keine Angabe'}<br>Bezahlt: ${bezahlt}<br>Abholen: ${abholZeitString}<br><br>Produkte:<br>${productList}`;
-
-            // Erstellen des Kalender-Links
-            let url = "https://outlook.live.com/calendar/0/deeplink/compose?";
-            url += "path=/calendar/view/month";
-            url += "&rru=addevent";
-            url += "&subject=" + encodeURIComponent(customer); // Kunde als Betreff
-            url += "&startdt=" + startTime;
-            url += "&enddt=" + endTime;
-            url += "&body=" + encodeURIComponent(body); // HTML formatierter Body
-            url += "&to=" + encodeURIComponent(recipients); 
-            url += "&bodyformat=HTML"; // Sage Outlook, dass der Body HTML ist
-
-            console.log("Opening Outlook link:", url);
-            window.open(url, '_blank');
-            
-            // Formular zurücksetzen
-            document.getElementById('outlook-form').reset();
-            // Datum wieder auf heute setzen für den nächsten Eintrag
-            document.getElementById('order-date').value = getDateString(new Date());
-        }
-        
-        // --- HILFSFUNKTIONEN für kaskadierende Dropdowns (vereinheitlicht) ---
-        
-        // Aktualisiert das Produkt-Dropdown basierend auf der Kategorie
-        window.updateProduktDropdown = function() {
-            const kategorieSelect = document.getElementById(`select-eintrag-kategorie`);
-            const produktSelect = document.getElementById(`select-eintrag-produkt`);
-            const selectedKategorie = kategorieSelect.value;
-            
-            produktSelect.innerHTML = '<option value="">-- Produkt --</option>'; // Reset
-            
-            if (selectedKategorie && PRODUKT_KATEGORIEN[selectedKategorie]) {
-                PRODUKT_KATEGORIEN[selectedKategorie].forEach(produkt => {
-                    const option = document.createElement('option');
-                    option.value = produkt;
-                    option.textContent = produkt;
-                    produktSelect.appendChild(option);
-                });
-            }
-        }
-        
-        // Eigene Update-Funktion für TGTG-Dropdown (ENTFERNT, da nicht mehr benötigt)
-        /*
-        window.updateTgtgProduktDropdown = function() {
-            // ... code entfernt ...
-        }
-        */
-
-
-        // Füllt die Kategorie-Dropdowns beim Start
-        function populateKategorieDropdowns() {
-            const kategorien = Object.keys(PRODUKT_KATEGORIEN);
-            const kategorieSelect = document.getElementById('select-eintrag-kategorie');
-            // const tgtgKategorieSelect = document.getElementById('select-tgtg-kategorie'); // ENTFERNT
-            
-            kategorieSelect.innerHTML = '<option value="">-- Kategorie --</option>';
-            // tgtgKategorieSelect.innerHTML = '<option value="">-- Kategorie --</option>'; // ENTFERNT
-            
-            kategorien.forEach(kategorie => {
-                const option1 = document.createElement('option');
-                option1.value = kategorie;
-                option1.textContent = kategorie;
-                kategorieSelect.appendChild(option1);
-
-                // TGTG-Dropdown füllen ENTFERNT
-                /*
-                const option2 = document.createElement('option');
-                option2.value = kategorie;
-                option2.textContent = kategorie;
-                tgtgKategorieSelect.appendChild(option2);
-                */
-            });
-        }
-
-
-        // --- INITIALIZATION ---
-        function init() {
-            console.log("App starting in local-only mode.");
-            // Tägliche Daten
-            displayCurrentDate(); // Diese Funktion aktualisiert jetzt auch den Outlook-Link
-            loadStaticInfo();
-            loadDataForDate(currentDate);
-            
-            // Kategorie-Dropdowns füllen
-            populateKategorieDropdowns();
-
-            // Event Listeners
-            document.getElementById('outlook-form').addEventListener('submit', handleOutlookSubmit);
-            // Heutiges Datum im Bestellformular eintragen
-            document.getElementById('order-date').value = getDateString(new Date());
-
-            // Set initial page
-            showPage('page-uebergabe', document.getElementById('nav-btn-uebergabe'));
-        }
-
-        // Run the app
-        init();
-
-    </script>
+  <!-- JS at the end so DOM is ready -->
+  <script src="app.js"></script>
 </body>
 </html>
-
